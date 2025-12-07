@@ -10,11 +10,12 @@
 using System;
 using System.Reflection;
 
+[assembly: Microsoft.AspNetCore.Identity.UI.UIFrameworkAttribute("Bootstrap5")]
 [assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("aspnet-DockerProject-173b19c3-da49-4ec3-8b73-1a6cf9d49993")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("DockerProject")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5fe3602318234f676ecba91abf557eb81e9820c4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+02263e1ff8b1cecaceb7254631d5dd83ef0c85e7")]
 [assembly: System.Reflection.AssemblyProductAttribute("DockerProject")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DockerProject")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
