@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "D:\\FMI-UNIBUC\\Anul2\\Sem1\\ASP_NET\\gogogo\\DockerProject\\DockerProject.csproj": {}
+    "/src/DockerProject/DockerProject.csproj": {}
   },
   "projects": {
-    "D:\\FMI-UNIBUC\\Anul2\\Sem1\\ASP_NET\\gogogo\\DockerProject\\DockerProject.csproj": {
+    "/src/DockerProject/DockerProject.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\FMI-UNIBUC\\Anul2\\Sem1\\ASP_NET\\gogogo\\DockerProject\\DockerProject.csproj",
+        "projectUniqueName": "/src/DockerProject/DockerProject.csproj",
         "projectName": "DockerProject",
-        "projectPath": "D:\\FMI-UNIBUC\\Anul2\\Sem1\\ASP_NET\\gogogo\\DockerProject\\DockerProject.csproj",
-        "packagesPath": "C:\\Users\\octav\\.nuget\\packages\\",
-        "outputPath": "D:\\FMI-UNIBUC\\Anul2\\Sem1\\ASP_NET\\gogogo\\DockerProject\\obj\\",
+        "projectPath": "/src/DockerProject/DockerProject.csproj",
+        "packagesPath": "/root/.nuget/packages/",
+        "outputPath": "/src/DockerProject/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\octav\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/root/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -92,7 +92,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.308/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

@@ -1,0 +1,34 @@
+@model DockerProject.Models.Restaurant
+
+<div class="container mt-4">
+    <h1>Adaugă Restaurant Nou</h1>
+    <hr />
+    
+    <div class="row">
+        <div class="col-md-4">
+            <form asp-action="Create">
+                
+                <div class="form-group mb-3">
+                    <label asp-for="Name" class="control-label">Nume Restaurant</label>
+                    <input asp-for="Name" class="form-control" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="OwnerId" class="control-label">Proprietar (ID)</label>
+                    <input asp-for="OwnerId" class="form-control" />
+                </div>
+
+                <div class="form-group form-check mb-3">
+                    <label class="form-check-label">
+                        <input class="form-check-input" asp-for="IsApproved" /> Ești de acord cu termenii? (IsApproved)
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <input type="submit" value="Creează" class="btn btn-primary" />
+                    <a asp-action="Index" class="btn btn-secondary">Renunță</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
