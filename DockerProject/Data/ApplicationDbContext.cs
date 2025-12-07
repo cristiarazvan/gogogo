@@ -1,32 +1,46 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using DockerProject.Models;
 
-namespace DockerProject.Data;
-
-public class ApplicationDbContext : IdentityDbContext
+namespace DockerProject.Data
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options)
+    // AICI este modificarea critică: <ApplicationUser>
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
-    }
-    
-    protected override void OnModelCreating(ModelBuilder builder)
-    {
-        base.OnModelCreating(builder);
-        // Configure string properties for MySQL compatibility
-        foreach (var entityType in builder.Model.GetEntityTypes())
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options)
         {
-            foreach (var property in entityType.GetProperties())
+        }
+
+        // Tabelele aplicației tale
+        public DbSet<Restaurant> Restaurants { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<Product> Products { get; set; }
+        public DbSet<Review> Reviews { get; set; }
+        public DbSet<CartItem> CartItems { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            // IMPORTANT: Această linie este obligatorie pentru Identity!
+            base.OnModelCreating(builder);
+
+            // Configurare pentru compatibilitate MySQL (din template-ul tău)
+            foreach (var entityType in builder.Model.GetEntityTypes())
             {
-                if (property.ClrType == typeof(string))
+                foreach (var property in entityType.GetProperties())
                 {
-                    var maxLength = property.GetMaxLength();
-                    if (maxLength == null)
+                    if (property.ClrType == typeof(string))
                     {
-                        // Set default max length for string primary keys and foreign keys
-                        if (property.IsKey() || property.IsForeignKey())
+                        var maxLength = property.GetMaxLength();
+                        if (maxLength == null)
                         {
-                            property.SetMaxLength(255);
+                            // Setează lungimea maximă default pentru cheile primare și străine de tip string
+                            if (property.IsKey() || property.IsForeignKey())
+                            {
+                                property.SetMaxLength(255);
+                            }
                         }
                     }
                 }

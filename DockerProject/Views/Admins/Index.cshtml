@@ -1,0 +1,26 @@
+﻿@model List<DockerProject.Models.UserViewModel>
+
+<div class="container mt-5">
+    <h2>Administrare Utilizatori</h2>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Email</th>
+            <th>Nume Complet</th>
+            <th>Roluri</th>
+            <th>Status Parolă</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Email</td>
+                <td>@user.FullName</td>
+                <td>@string.Join(", ", user.Roles)</td>
+                <td>🔒 Criptată (Securizată)</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
