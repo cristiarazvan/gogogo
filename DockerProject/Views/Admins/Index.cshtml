@@ -1,14 +1,38 @@
 ﻿@model List<DockerProject.Models.UserViewModel>
+@inject Microsoft.AspNetCore.Identity.RoleManager<Microsoft.AspNetCore.Identity.IdentityRole> RoleManager
 
 <div class="container mt-5">
-    <h2>Administrare Utilizatori</h2>
-    <table class="table table-striped">
-        <thead>
+    <!-- Success/Error Messages -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Administrare Utilizatori</h2>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Adaugă Utilizator Nou
+        </a>
+    </div>
+
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
         <tr>
             <th>Email</th>
             <th>Nume Complet</th>
             <th>Roluri</th>
             <th>Status Parolă</th>
+            <th>Acțiuni</th>
         </tr>
         </thead>
         <tbody>
@@ -17,8 +41,58 @@
             <tr>
                 <td>@user.Email</td>
                 <td>@user.FullName</td>
-                <td>@string.Join(", ", user.Roles)</td>
-                <td>🔒 Criptată (Securizată)</td>
+                <td>
+                    <form asp-action="UpdateRole" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        <div class="input-group input-group-sm" style="max-width: 200px;">
+                            <select name="newRole" class="form-select form-select-sm" onchange="this.form.submit()">
+                                <option value="">-- Selectează --</option>
+                                @foreach (var role in RoleManager.Roles.ToList())
+                                {
+                                    <option value="@role.Name" selected="@(user.Roles.Contains(role.Name))">
+                                        @role.Name
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                    </form>
+                    <!-- @foreach (var role in user.Roles) -->
+                    <!-- { -->
+                    <!--     <span class="badge bg-info text-dark me-1 mt-1">@role</span> -->
+                    <!-- } -->
+                </td>
+                <td><span class="badge bg-success">🔒 Securizată</span></td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal@(user.Id)">
+                        <i class="bi bi-trash"></i> Șterge
+                    </button>
+
+                    <!-- Delete Confirmation Modal -->
+                    <div class="modal fade" id="deleteModal@(user.Id)" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header bg-danger text-white">
+                                    <h5 class="modal-title" id="deleteModalLabel">Confirmare Ștergere</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Ești sigur că vrei să ștergi utilizatorul <strong>@user.Email</strong>?
+                                    <br/><br/>
+                                    <span class="text-danger">Această acțiune este permanentă și nu poate fi anulată!</span>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anulează</button>
+                                    <form asp-action="Delete" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@user.Id" />
+                                        <button type="submit" class="btn btn-danger">Șterge Permanent</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
             </tr>
         }
         </tbody>
