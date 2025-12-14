@@ -12,7 +12,7 @@ namespace DockerProject.Data
         {
         }
 
-        // Tabelele aplicației tale
+        // Tabelele aplicației
         public DbSet<Restaurant> Restaurants { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
@@ -20,6 +20,7 @@ namespace DockerProject.Data
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<RestaurantRating> RestaurantRating { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
