@@ -7,7 +7,7 @@ public class Restaurant
     public int Id { get; set; }
     [Required] public string Name { get; set; }
     [Required] public string ImagePath { get; set; }
-    [Required] public bool IsApproved { get; set; }
+    [Required] public int IsApproved { get; set; } // 0=Pending, 1=Approved, 2=Denied
     public string OwnerId { get; set; }
     public ApplicationUser Owner { get; set; }
     public virtual ICollection<Product> Products { get; set; }

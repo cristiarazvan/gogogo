@@ -3,6 +3,7 @@ namespace DockerProject.Models
     public class NotificationsViewModel
     {
         public List<PendingRestaurant> PendingRestaurants { get; set; } = new List<PendingRestaurant>();
+        public List<PendingRestaurant> DeniedRestaurants { get; set; } = new List<PendingRestaurant>();
         public List<PendingProduct> PendingProducts { get; set; } = new List<PendingProduct>();
     }
 

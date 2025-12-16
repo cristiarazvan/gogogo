@@ -169,7 +169,7 @@ namespace DockerProject.Data
                     Name = "Gordon's Kitchen",
                     ImagePath = "/images/restaurants/gordons-kitchen.jpg",
                     OwnerId = chef1.Id,
-                    IsApproved = true
+                    IsApproved = 1 // Approved
                 };
 
                 var restaurant2 = new Restaurant
@@ -177,7 +177,7 @@ namespace DockerProject.Data
                     Name = "Jamie's Italian",
                     ImagePath = "/images/restaurants/jamies-italian.jpg",
                     OwnerId = chef2.Id,
-                    IsApproved = true
+                    IsApproved = 1 // Approved
                 };
 
                 var restaurant3 = new Restaurant
@@ -185,7 +185,7 @@ namespace DockerProject.Data
                     Name = "La Bella Pizza",
                     ImagePath = "/images/restaurants/bella-pizza.jpg",
                     OwnerId = chef3.Id,
-                    IsApproved = true
+                    IsApproved = 1 // Approved
                 };
 
                 var restaurant4 = new Restaurant
@@ -193,7 +193,7 @@ namespace DockerProject.Data
                     Name = "Golden Wok",
                     ImagePath = "/images/restaurants/golden-wok.jpg",
                     OwnerId = chef4.Id,
-                    IsApproved = true
+                    IsApproved = 1 // Approved
                 };
 
                 var restaurant5 = new Restaurant
@@ -201,7 +201,7 @@ namespace DockerProject.Data
                     Name = "Le Petit Bistro",
                     ImagePath = "/images/restaurants/petit-bistro.jpg",
                     OwnerId = chef5.Id,
-                    IsApproved = false // Pending approval
+                    IsApproved = 0 // Pending approval
                 };
 
                 var restaurant6 = new Restaurant
@@ -209,7 +209,7 @@ namespace DockerProject.Data
                     Name = "Burger Palace",
                     ImagePath = "/images/restaurants/burger-palace.jpg",
                     OwnerId = chef1.Id,
-                    IsApproved = true
+                    IsApproved = 1 // Approved
                 };
 
                 await context.Restaurants.AddRangeAsync(restaurant1, restaurant2, restaurant3, restaurant4, restaurant5, restaurant6);
