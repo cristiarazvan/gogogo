@@ -110,6 +110,8 @@ namespace DockerProject.Controllers
 
             if (ModelState.IsValid)
             {
+                // Set new restaurants as pending by default (0 = Pending)
+                restaurant.IsApproved = 0;
                 _context.Add(restaurant);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));

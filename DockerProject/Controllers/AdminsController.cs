@@ -145,10 +145,25 @@ namespace DockerProject.Controllers
         {
             var viewModel = new NotificationsViewModel();
 
-            // Get pending restaurants
+            // Get pending restaurants (IsApproved = 0)
             var pendingRestaurants = await _context.Restaurants
                 .Include(r => r.Owner)
-                .Where(r => !r.IsApproved)
+                .Where(r => r.IsApproved == 0)
+                .Select(r => new PendingRestaurant
+                {
+                    Id = r.Id,
+                    Name = r.Name,
+                    ImagePath = r.ImagePath,
+                    OwnerName = r.Owner.FullName,
+                    OwnerEmail = r.Owner.Email,
+                    SubmittedDate = DateTime.Now // You can add a CreatedAt field later
+                })
+                .ToListAsync();
+
+            // Get denied restaurants (IsApproved = 2)
+            var deniedRestaurants = await _context.Restaurants
+                .Include(r => r.Owner)
+                .Where(r => r.IsApproved == 2)
                 .Select(r => new PendingRestaurant
                 {
                     Id = r.Id,
@@ -180,6 +195,7 @@ namespace DockerProject.Controllers
                 .ToListAsync();
 
             viewModel.PendingRestaurants = pendingRestaurants;
+            viewModel.DeniedRestaurants = deniedRestaurants;
             viewModel.PendingProducts = pendingProducts;
 
             return View(viewModel);
@@ -197,7 +213,7 @@ namespace DockerProject.Controllers
                 return RedirectToAction(nameof(Notifications));
             }
 
-            restaurant.IsApproved = true;
+            restaurant.IsApproved = 1; // 1 = Approved
             await _context.SaveChangesAsync();
 
             TempData["Success"] = $"Restaurantul '{restaurant.Name}' a fost aprobat cu succes!";
@@ -209,19 +225,36 @@ namespace DockerProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RejectRestaurant(int id)
         {
-            var restaurant = await _context.Restaurants.Include(r => r.Products).FirstOrDefaultAsync(r => r.Id == id);
+            var restaurant = await _context.Restaurants.FindAsync(id);
             if (restaurant == null)
             {
                 TempData["Error"] = "Restaurant nu a fost găsit.";
                 return RedirectToAction(nameof(Notifications));
             }
 
-            // Delete associated products first
-            _context.Products.RemoveRange(restaurant.Products);
-            _context.Restaurants.Remove(restaurant);
+            restaurant.IsApproved = 2; // 2 = Denied
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = $"Restaurantul '{restaurant.Name}' a fost respins și șters.";
+            TempData["Success"] = $"Restaurantul '{restaurant.Name}' a fost respins.";
+            return RedirectToAction(nameof(Notifications));
+        }
+
+        // Reapprove Restaurant (from denied status back to approved)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReapproveRestaurant(int id)
+        {
+            var restaurant = await _context.Restaurants.FindAsync(id);
+            if (restaurant == null)
+            {
+                TempData["Error"] = "Restaurant nu a fost găsit.";
+                return RedirectToAction(nameof(Notifications));
+            }
+
+            restaurant.IsApproved = 1; // 1 = Approved
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Restaurantul '{restaurant.Name}' a fost reaprobat cu succes!";
             return RedirectToAction(nameof(Notifications));
         }
 
