@@ -74,55 +74,67 @@ namespace DockerProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Restaurant restaurant, IFormFile? imageFile)
         {
-            // Daca nu e Admin, proprietarul este automat cel logat
+            // LOGICA OWNER & STATUS
             if (!User.IsInRole("Admin"))
             {
                 restaurant.OwnerId = _userManager.GetUserId(User);
+                restaurant.IsApproved = 2; 
             }
             else 
             {
-                // Daca e Admin si nu a selectat nimic din dropdown, se pune pe el insusi
-                if (string.IsNullOrEmpty(restaurant.OwnerId))
-                {
-                    restaurant.OwnerId = _userManager.GetUserId(User);
-                }
+                if (string.IsNullOrEmpty(restaurant.OwnerId)) restaurant.OwnerId = _userManager.GetUserId(User);
             }
 
+            // --- FIX 1: SCOATEM VALIDAREA AUTOMATĂ PENTRU IMAGINE ---
+            ModelState.Remove("ImagePath"); // <--- Asta rezolvă eroarea "nu ai completat poza"
             ModelState.Remove("Owner");
-            ModelState.Remove("OwnerId"); // Il scoatem de la validare, ca poate veni gol din form
+            ModelState.Remove("OwnerId");
             ModelState.Remove("Products");
             ModelState.Remove("Ratings");
 
+            // --- PROCESARE IMAGINE ---
             if (imageFile != null && imageFile.Length > 0)
             {
-                var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images");
+                // Validări dimensiune/tip...
+                if (imageFile.Length > 5 * 1024 * 1024)
+                {
+                    ModelState.AddModelError("ImagePath", "Image too large (Max 5MB).");
+                    if (User.IsInRole("Admin")) ViewData["OwnerList"] = new SelectList(_context.Users, "Id", "UserName", restaurant.OwnerId);
+                    return View(restaurant);
+                }
+
+                // --- FIX 2: CREARE FOLDER (Siguranță) ---
+                var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "restaurants");
+                if (!Directory.Exists(uploadsFolder)) 
+                {
+                    Directory.CreateDirectory(uploadsFolder); // Creăm folderul dacă nu există
+                }
+
                 var uniqueFileName = Guid.NewGuid().ToString() + "_" + imageFile.FileName;
                 var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await imageFile.CopyToAsync(stream);
                 }
-                restaurant.ImagePath = "/images/" + uniqueFileName;
+                restaurant.ImagePath = "/images/restaurants/" + uniqueFileName;
+            }
+            else
+            {
+                // Dacă e CREATE și nu avem poză, e o problemă (că e Required)
+                ModelState.AddModelError("ImagePath", "Please upload an image.");
+                if (User.IsInRole("Admin")) ViewData["OwnerList"] = new SelectList(_context.Users, "Id", "UserName", restaurant.OwnerId);
+                return View(restaurant);
             }
 
             if (ModelState.IsValid)
             {
-                // Set new restaurants as pending by default (0 = Pending)
-                restaurant.IsApproved = 0;
                 _context.Add(restaurant);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
 
-            // Reincarcam lista de Owneri daca e Admin si a dat eroare
-            if (User.IsInRole("Admin"))
-            {
-                ViewData["OwnerId"] = new SelectList(_context.Users, "Id", "UserName", restaurant.OwnerId);
-            }
-
+            if (User.IsInRole("Admin")) ViewData["OwnerList"] = new SelectList(_context.Users, "Id", "UserName", restaurant.OwnerId);
             return View(restaurant);
         }
 
@@ -157,56 +169,50 @@ namespace DockerProject.Controllers
         {
             if (id != restaurant.Id) return NotFound();
 
+            // --- FIX 1: VALIDĂRI ---
+            ModelState.Remove("ImagePath"); // Ignorăm validarea string-ului
             ModelState.Remove("Owner");
             ModelState.Remove("Products");
             ModelState.Remove("Ratings");
-            
-            // Daca userul NU e admin, nu are voie sa schimbe Owner-ul, deci il fortam pe cel vechi
+
+            var oldData = await _context.Restaurants.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id);
+            if (oldData == null) return NotFound();
+
             if (!User.IsInRole("Admin"))
             {
-                 var original = await _context.Restaurants.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id);
-                 restaurant.OwnerId = original?.OwnerId;
+                restaurant.OwnerId = oldData.OwnerId;
+                restaurant.IsApproved = oldData.IsApproved;
             }
-            // Daca E admin, OwnerId vine din Formular (dropdown), deci e ok.
+
+            if (imageFile != null && imageFile.Length > 0)
+            {
+                // --- FIX 2: CREARE FOLDER ---
+                var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "restaurants");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                var uniqueFileName = Guid.NewGuid().ToString() + "_" + imageFile.FileName;
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await imageFile.CopyToAsync(stream);
+                }
+                restaurant.ImagePath = "/images/restaurants/" + uniqueFileName;
+            }
+            else
+            {
+                // Păstrăm calea veche
+                restaurant.ImagePath = oldData.ImagePath;
+            }
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    if (imageFile != null && imageFile.Length > 0)
-                    {
-                        var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images");
-                        var uniqueFileName = Guid.NewGuid().ToString() + "_" + imageFile.FileName;
-                        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await imageFile.CopyToAsync(stream);
-                        }
-                        restaurant.ImagePath = "/images/" + uniqueFileName;
-                    }
-                    else
-                    {
-                        var oldData = await _context.Restaurants.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id);
-                        restaurant.ImagePath = oldData.ImagePath;
-                    }
-
-                    _context.Update(restaurant);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!RestaurantExists(restaurant.Id)) return NotFound();
-                    else throw;
-                }
+                try { _context.Update(restaurant); await _context.SaveChangesAsync(); }
+                catch (DbUpdateConcurrencyException) { if (!_context.Restaurants.Any(e => e.Id == restaurant.Id)) return NotFound(); else throw; }
                 return RedirectToAction(nameof(Index));
             }
-            
-            if (User.IsInRole("Admin"))
-            {
-                ViewData["OwnerId"] = new SelectList(_context.Users, "Id", "UserName", restaurant.OwnerId);
-            }
-
+    
+            if (User.IsInRole("Admin")) ViewData["OwnerList"] = new SelectList(_context.Users, "Id", "UserName", restaurant.OwnerId);
             return View(restaurant);
         }
 

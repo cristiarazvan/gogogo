@@ -10,38 +10,53 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <form asp-action="Edit" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
-            <div class="form-group">
+    
+            @if (!User.IsInRole("Admin"))
+            {
+                <input type="hidden" asp-for="OwnerId" />
+                <input type="hidden" asp-for="IsApproved" />
+            }
+
+            <div class="form-group mb-3">
                 <label asp-for="Name" class="control-label"></label>
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="ImagePath" class="control-label"></label>
-                <input asp-for="ImagePath" class="form-control" />
+
+            <div class="form-group mb-3">
+                <label class="control-label">Update Image</label>
+                @if (!string.IsNullOrEmpty(Model.ImagePath))
+                {
+                    <div class="mb-2">
+                        <img src="@Model.ImagePath" style="width: 100px; height: 100px; object-fit: cover;" />
+                    </div>
+                }
+                <input type="file" name="imageFile" class="form-control" accept=".jpg,.jpeg,.png,.gif,.webp" />
                 <span asp-validation-for="ImagePath" class="text-danger"></span>
             </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsApproved" /> @Html.DisplayNameFor(model => model.IsApproved)
-                </label>
-            </div>
+
             @if (User.IsInRole("Admin"))
             {
-                <div class="form-group">
-                    <label asp-for="OwnerId" class="control-label">Assign Owner (Admin Only)</label>
+                <div class="form-group mb-3">
+                    <label asp-for="IsApproved" class="control-label">Status</label>
+                    <select asp-for="IsApproved" class="form-control">
+                        <option value="2">Pending</option>
+                        <option value="1">Approved</option>
+                        <option value="0">Denied</option>
+                    </select>
+                </div>
+        
+                <div class="form-group mb-3">
+                    <label asp-for="OwnerId" class="control-label">Assign Owner</label>
                     <select asp-for="OwnerId" class="form-control" asp-items="ViewBag.OwnerList">
                         <option value="">-- Select Owner --</option>
                     </select>
-                    <span asp-validation-for="OwnerId" class="text-danger"></span>
                 </div>
             }
-            else
-            {
-                <input type="hidden" asp-for="OwnerId" />
-            }
+
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>

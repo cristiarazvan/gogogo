@@ -80,11 +80,13 @@ namespace DockerProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Product product, IFormFile? imageFile)
         {
+            // 1. Curățăm validările automate
+            ModelState.Remove("ImagePath");
             ModelState.Remove("Category");
             ModelState.Remove("Restaurant");
             ModelState.Remove("Reviews");
 
-            // Validare suplimentara: Un user simplu nu are voie sa puna produse la restaurantul altuia
+            // 2. Verificăm permisiunile (dacă nu e Admin)
             if (!User.IsInRole("Admin"))
             {
                 var userId = _userManager.GetUserId(User);
@@ -95,19 +97,44 @@ namespace DockerProject.Controllers
                 }
             }
 
+            // 3. PROCESAREA IMAGINII (AICI E FIX-UL)
             if (imageFile != null && imageFile.Length > 0)
             {
-                var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images");
+                // Validare mărime
+                if (imageFile.Length > 5 * 1024 * 1024)
+                {
+                     ModelState.AddModelError("ImagePath", "Image too large.");
+                     // Reîncărcare liste...
+                     var uid = _userManager.GetUserId(User);
+                     IQueryable<Restaurant> q = _context.Restaurants;
+                     if (!User.IsInRole("Admin")) q = q.Where(r => r.OwnerId == uid);
+                     ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", product.CategoryId);
+                     ViewData["RestaurantId"] = new SelectList(await q.ToListAsync(), "Id", "Name", product.RestaurantId);
+                     return View(product);
+                }
+
+                // --- FIX CRITIC: CREAREA FOLDERULUI ---
+                // Construim calea către folderul 'products'
+                var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products");
+                
+                // Verificăm dacă folderul există. Dacă NU, îl creăm acum!
+                if (!Directory.Exists(uploadsFolder)) 
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+                // -------------------------------------
+
+                // Acum putem salva fișierul liniștiți
                 var uniqueFileName = Guid.NewGuid().ToString() + "_" + imageFile.FileName;
                 var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await imageFile.CopyToAsync(stream);
                 }
-                product.ImagePath = "/images/" + uniqueFileName;
+                
+                // Salvăm calea relativă în baza de date
+                product.ImagePath = "/images/products/" + uniqueFileName;
             }
 
             if (ModelState.IsValid)
@@ -117,19 +144,16 @@ namespace DockerProject.Controllers
                 return RedirectToAction(nameof(Index));
             }
             
-            // Reincarcam listele in caz de eroare
+            // Reîncărcare liste la eroare
             var currentUserId = _userManager.GetUserId(User);
             IQueryable<Restaurant> repoQuery = _context.Restaurants;
-            if (!User.IsInRole("Admin"))
-            {
-                repoQuery = repoQuery.Where(r => r.OwnerId == currentUserId);
-            }
+            if (!User.IsInRole("Admin")) repoQuery = repoQuery.Where(r => r.OwnerId == currentUserId);
 
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", product.CategoryId);
             ViewData["RestaurantId"] = new SelectList(await repoQuery.ToListAsync(), "Id", "Name", product.RestaurantId);
             return View(product);
         }
-
+        
         // GET: Products/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -168,57 +192,62 @@ namespace DockerProject.Controllers
         {
             if (id != product.Id) return NotFound();
 
+            ModelState.Remove("ImagePath");
             ModelState.Remove("Category");
             ModelState.Remove("Restaurant");
             ModelState.Remove("Reviews");
 
+            if (imageFile != null && imageFile.Length > 0)
+            {
+                // --- FIX CRITIC: CREAREA FOLDERULUI SI LA EDIT ---
+                var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products");
+                if (!Directory.Exists(uploadsFolder)) 
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+                // ------------------------------------------------
+
+                var uniqueFileName = Guid.NewGuid().ToString() + "_" + imageFile.FileName;
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await imageFile.CopyToAsync(stream);
+                }
+                product.ImagePath = "/images/products/" + uniqueFileName;
+            }
+            else
+            {
+                // Păstrăm imaginea veche
+                var oldData = await _context.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+                product.ImagePath = oldData.ImagePath;
+            }
+
             if (ModelState.IsValid)
             {
-                try
-                {
-                    // Pastram imaginea veche daca nu se incarca una noua
-                    if (imageFile != null && imageFile.Length > 0)
-                    {
-                        var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images");
-                        var uniqueFileName = Guid.NewGuid().ToString() + "_" + imageFile.FileName;
-                        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await imageFile.CopyToAsync(stream);
-                        }
-                        product.ImagePath = "/images/" + uniqueFileName;
-                    }
-                    else
-                    {
-                        var oldData = await _context.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
-                        product.ImagePath = oldData.ImagePath;
-                    }
-
-                    _context.Update(product);
-                    await _context.SaveChangesAsync();
+                try 
+                { 
+                    _context.Update(product); 
+                    await _context.SaveChangesAsync(); 
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ProductExists(product.Id)) return NotFound();
-                    else throw;
+                catch (DbUpdateConcurrencyException) 
+                { 
+                    if (!_context.Products.Any(e => e.Id == product.Id)) return NotFound(); 
+                    else throw; 
                 }
                 return RedirectToAction(nameof(Index));
             }
             
-            // Reincarcare liste la eroare
+            // Reîncărcare liste
             var userId = _userManager.GetUserId(User);
-            IQueryable<Restaurant> repoQuery = _context.Restaurants;
-            if (!User.IsInRole("Admin"))
-            {
-                repoQuery = repoQuery.Where(r => r.OwnerId == userId);
-            }
+            IQueryable<Restaurant> finalQuery = _context.Restaurants;
+            if (!User.IsInRole("Admin")) finalQuery = finalQuery.Where(r => r.OwnerId == userId);
             
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", product.CategoryId);
-            ViewData["RestaurantId"] = new SelectList(await repoQuery.ToListAsync(), "Id", "Name", product.RestaurantId);
+            ViewData["RestaurantId"] = new SelectList(await finalQuery.ToListAsync(), "Id", "Name", product.RestaurantId);
             return View(product);
         }
-
+        
         // GET: Products/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
