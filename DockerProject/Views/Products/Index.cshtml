@@ -70,6 +70,24 @@
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                 <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
                 <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <text>|</text>
+                    <form asp-controller="Cart" asp-action="AddToCart" method="post" class="d-inline">
+                        <input type="hidden" name="productId" value="@item.Id" />
+                        <input type="hidden" name="quantity" value="1" />
+                        <button type="submit" class="btn btn-sm btn-success">
+                            <i class="bi bi-cart-plus"></i> Cart
+                        </button>
+                    </form>
+                    <form asp-controller="Favorites" asp-action="Add" method="post" class="d-inline">
+                        <input type="hidden" name="productId" value="@item.Id" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-heart"></i> Fav
+                        </button>
+                    </form>
+                }
             </td>
         </tr>
 }

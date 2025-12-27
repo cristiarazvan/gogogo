@@ -63,4 +63,22 @@
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>
+
+    @if (User.Identity.IsAuthenticated)
+    {
+        <text>|</text>
+        <form asp-controller="Cart" asp-action="AddToCart" method="post" class="d-inline">
+            <input type="hidden" name="productId" value="@Model.Id" />
+            <input type="hidden" name="quantity" value="1" />
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-cart-plus"></i> Add to Cart
+            </button>
+        </form>
+        <form asp-controller="Favorites" asp-action="Add" method="post" class="d-inline">
+            <input type="hidden" name="productId" value="@Model.Id" />
+            <button type="submit" class="btn btn-outline-danger">
+                <i class="bi bi-heart"></i> Add to Favorites
+            </button>
+        </form>
+    }
 </div>
