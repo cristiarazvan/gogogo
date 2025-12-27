@@ -1,0 +1,80 @@
+@model DockerProject.Models.Order
+
+@{
+    ViewData["Title"] = "Order Successful";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-check-circle-fill text-success" viewBox="0 0 16 16">
+                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                        </svg>
+                    </div>
+                    <h2 class="text-success">Order Placed Successfully!</h2>
+                    <p class="text-muted">Thank you for your order. Your order has been confirmed.</p>
+
+                    <div class="mt-4 mb-4">
+                        <p><strong>Order ID:</strong> #@Model.Id</p>
+                        <p><strong>Order Date:</strong> @Model.Date.ToString("MMMM dd, yyyy HH:mm")</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5>Order Details</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Restaurant</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            @if (!string.IsNullOrEmpty(item.Product.ImagePath))
+                                            {
+                                                <img src="~/@item.Product.ImagePath" alt="@item.Product.Title" style="width: 50px; height: 50px; object-fit: cover; margin-right: 10px;">
+                                            }
+                                            <div>
+                                                <strong>@item.Product.Title</strong>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>@item.Product.Restaurant.Name</td>
+                                    <td>$@item.Price.ToString("F2")</td>
+                                    <td>@item.Quantity</td>
+                                    <td>$@((item.Price * item.Quantity).ToString("F2"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>Total:</strong></td>
+                                <td><strong>$@ViewBag.TotalPrice.ToString("F2")</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mt-4 text-center">
+                <a asp-controller="Products" asp-action="Index" class="btn btn-primary">Continue Shopping</a>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Go to Home</a>
+            </div>
+        </div>
+    </div>
+</div>

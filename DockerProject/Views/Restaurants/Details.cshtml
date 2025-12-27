@@ -105,7 +105,7 @@
 
                             <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
                                 <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id" class="btn btn-sm btn-info text-white">Details</a>
-                                
+
                                 @if (canEdit)
                                 {
                                     <div class="btn-group">
@@ -115,7 +115,28 @@
                                 }
                                 else
                                 {
-                                    <button class="btn btn-sm btn-success" disabled>Add to Cart</button>
+                                    <div class="btn-group">
+                                        @if (User.Identity.IsAuthenticated)
+                                        {
+                                            <form asp-controller="Cart" asp-action="AddToCart" method="post" class="d-inline">
+                                                <input type="hidden" name="productId" value="@product.Id" />
+                                                <input type="hidden" name="quantity" value="1" />
+                                                <button type="submit" class="btn btn-sm btn-success">
+                                                    <i class="bi bi-cart-plus"></i> Add to Cart
+                                                </button>
+                                            </form>
+                                            <form asp-controller="Favorites" asp-action="Add" method="post" class="d-inline">
+                                                <input type="hidden" name="productId" value="@product.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-heart"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-sm btn-success">Login to Order</a>
+                                        }
+                                    </div>
                                 }
                             </div>
                         </div>
