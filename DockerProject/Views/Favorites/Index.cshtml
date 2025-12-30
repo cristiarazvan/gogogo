@@ -4,13 +4,29 @@
     ViewData["Title"] = "My Favorites";
 }
 
-<div class="container mt-4">
-    <h1>My Favorites</h1>
+<!-- Page Header -->
+<div class="page-header mb-4">
+    <div class="page-header-content">
+        <div class="container">
+            <nav aria-label="breadcrumb" class="mb-2">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/" class="text-white-50">Home</a></li>
+                    <li class="breadcrumb-item active text-white">Favorites</li>
+                </ol>
+            </nav>
+            <h1 class="page-title">
+                <i class="bi bi-heart-fill me-3"></i>My Favorites
+            </h1>
+            <p class="page-subtitle mb-0">Your saved products for later</p>
+        </div>
+    </div>
+</div>
 
+<div class="container pb-5">
     @if (TempData["Success"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["Success"]
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
@@ -18,7 +34,7 @@
     @if (TempData["Error"] != null)
     {
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["Error"]
+            <i class="bi bi-exclamation-circle me-2"></i>@TempData["Error"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
@@ -26,67 +42,96 @@
     @if (TempData["Info"] != null)
     {
         <div class="alert alert-info alert-dismissible fade show" role="alert">
-            @TempData["Info"]
+            <i class="bi bi-info-circle me-2"></i>@TempData["Info"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
     @if (Model.Any())
     {
-        <div class="row">
+        <div class="row g-4">
             @foreach (var favorite in Model)
             {
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        @if (!string.IsNullOrEmpty(favorite.Product.ImagePath))
-                        {
-                            <img src="~/@favorite.Product.ImagePath" class="card-img-top" alt="@favorite.Product.Title" style="height: 200px; object-fit: cover;">
-                        }
-                        <div class="card-body">
-                            <h5 class="card-title">@favorite.Product.Title</h5>
-                            <p class="card-text">
-                                <small class="text-muted">@favorite.Product.Restaurant.Name</small>
+                <div class="col-md-6 col-lg-4">
+                    <div class="product-card h-100">
+                        <div class="product-card-image-wrapper">
+                            @if (!string.IsNullOrEmpty(favorite.Product.ImagePath))
+                            {
+                                <img src="@favorite.Product.ImagePath" class="product-card-image" alt="@favorite.Product.Title">
+                            }
+                            else
+                            {
+                                <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-image fs-1 text-muted"></i>
+                                </div>
+                            }
+                            <span class="product-card-price">@favorite.Product.Price.ToString("C")</span>
+
+                            <!-- Heart icon overlay -->
+                            <div class="position-absolute top-0 end-0 m-2">
+                                <span class="badge bg-danger rounded-pill p-2">
+                                    <i class="bi bi-heart-fill"></i>
+                                </span>
+                            </div>
+
+                            @if (favorite.Product.Stock <= 0)
+                            {
+                                <span class="position-absolute top-0 start-0 m-2 badge bg-danger">Out of Stock</span>
+                            }
+                        </div>
+
+                        <div class="product-card-body">
+                            <h5 class="product-card-title">@favorite.Product.Title</h5>
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-shop me-1"></i>@favorite.Product.Restaurant.Name
                             </p>
-                            <p class="card-text">@favorite.Product.Description</p>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="h5 mb-0">$@favorite.Product.Price.ToString("F2")</span>
+                            <p class="product-card-description">@favorite.Product.Description</p>
+
+                            <div class="d-flex align-items-center">
                                 @if (favorite.Product.Stock > 0)
                                 {
-                                    <span class="badge bg-success">In Stock (@favorite.Product.Stock)</span>
+                                    <span class="badge bg-success-subtle text-success">
+                                        <i class="bi bi-check-circle me-1"></i>In Stock (@favorite.Product.Stock)
+                                    </span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-danger">Out of Stock</span>
+                                    <span class="badge bg-danger-subtle text-danger">
+                                        <i class="bi bi-x-circle me-1"></i>Out of Stock
+                                    </span>
                                 }
                             </div>
                         </div>
-                        <div class="card-footer bg-transparent">
-                            <div class="row g-2">
-                                <div class="col-12">
-                                    @if (favorite.Product.Stock > 0)
-                                    {
-                                        <form asp-action="MoveToCart" method="post" class="d-inline w-100">
-                                            <input type="hidden" name="favoriteId" value="@favorite.Id" />
-                                            <div class="input-group input-group-sm mb-2">
-                                                <input type="number" name="quantity" value="1" min="1" max="@favorite.Product.Stock" class="form-control" />
-                                                <button type="submit" class="btn btn-primary">Add to Cart</button>
-                                            </div>
-                                        </form>
-                                    }
-                                    else
-                                    {
-                                        <button class="btn btn-secondary btn-sm w-100 mb-2" disabled>Out of Stock</button>
-                                    }
-                                </div>
-                                <div class="col-6">
-                                    <a asp-controller="Products" asp-action="Details" asp-route-id="@favorite.Product.Id" class="btn btn-outline-primary btn-sm w-100">View Details</a>
-                                </div>
-                                <div class="col-6">
-                                    <form asp-action="Remove" method="post" class="d-inline w-100">
-                                        <input type="hidden" name="favoriteId" value="@favorite.Id" />
-                                        <button type="submit" class="btn btn-outline-danger btn-sm w-100" onclick="return confirm('Remove from favorites?')">Remove</button>
-                                    </form>
-                                </div>
+
+                        <div class="product-card-actions flex-column gap-2">
+                            @if (favorite.Product.Stock > 0)
+                            {
+                                <form asp-action="MoveToCart" method="post" class="w-100">
+                                    <input type="hidden" name="favoriteId" value="@favorite.Id" />
+                                    <div class="input-group">
+                                        <input type="number" name="quantity" value="1" min="1" max="@favorite.Product.Stock" class="form-control text-center" />
+                                        <button type="submit" class="btn btn-primary flex-grow-1">
+                                            <i class="bi bi-cart-plus me-1"></i>Add to Cart
+                                        </button>
+                                    </div>
+                                </form>
+                            }
+                            else
+                            {
+                                <button class="btn btn-secondary w-100" disabled>
+                                    <i class="bi bi-x-circle me-1"></i>Out of Stock
+                                </button>
+                            }
+                            <div class="d-flex gap-2 w-100">
+                                <a asp-controller="Products" asp-action="Details" asp-route-id="@favorite.Product.Id" class="btn btn-outline-primary flex-fill">
+                                    <i class="bi bi-eye me-1"></i>View
+                                </a>
+                                <form asp-action="Remove" method="post" class="flex-fill">
+                                    <input type="hidden" name="favoriteId" value="@favorite.Id" />
+                                    <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Remove from favorites?')">
+                                        <i class="bi bi-trash me-1"></i>Remove
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -96,11 +141,15 @@
     }
     else
     {
-        <div class="alert alert-info" role="alert">
-            <h4 class="alert-heading">No favorites yet!</h4>
-            <p>Start adding products to your favorites to see them here.</p>
-            <hr />
-            <a asp-controller="Products" asp-action="Index" class="btn btn-primary">Browse Products</a>
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="bi bi-heart"></i>
+            </div>
+            <h3 class="empty-state-title">No favorites yet</h3>
+            <p class="empty-state-message">Start adding products you love to see them here</p>
+            <a asp-controller="Restaurants" asp-action="Index" class="btn btn-primary btn-lg">
+                <i class="bi bi-shop me-2"></i>Browse Restaurants
+            </a>
         </div>
     }
 </div>

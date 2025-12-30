@@ -4,13 +4,29 @@
     ViewData["Title"] = "Shopping Cart";
 }
 
-<div class="container mt-4">
-    <h1>Shopping Cart</h1>
+<!-- Page Header -->
+<div class="page-header mb-4">
+    <div class="page-header-content">
+        <div class="container">
+            <nav aria-label="breadcrumb" class="mb-2">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/" class="text-white-50">Home</a></li>
+                    <li class="breadcrumb-item active text-white">Shopping Cart</li>
+                </ol>
+            </nav>
+            <h1 class="page-title">
+                <i class="bi bi-cart3 me-3"></i>Shopping Cart
+            </h1>
+            <p class="page-subtitle mb-0">Review your items before checkout</p>
+        </div>
+    </div>
+</div>
 
+<div class="container pb-5">
     @if (TempData["Success"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["Success"]
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
@@ -18,107 +34,129 @@
     @if (TempData["Error"] != null)
     {
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["Error"]
+            <i class="bi bi-exclamation-circle me-2"></i>@TempData["Error"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
     @if (Model.Any())
     {
-        <div class="row">
-            <div class="col-md-8">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Restaurant</th>
-                            <th>Price</th>
-                            <th>Quantity</th>
-                            <th>Subtotal</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+        <div class="row g-4">
+            <!-- Cart Items -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-bag me-2"></i>Cart Items (@Model.Count())
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
                         @foreach (var item in Model)
                         {
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center">
+                            <div class="cart-item border-bottom p-4">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
                                         @if (!string.IsNullOrEmpty(item.Product.ImagePath))
                                         {
-                                            <img src="~/@item.Product.ImagePath" alt="@item.Product.Title" style="width: 50px; height: 50px; object-fit: cover; margin-right: 10px;">
+                                            <img src="@item.Product.ImagePath" alt="@item.Product.Title" class="rounded" style="width: 80px; height: 80px; object-fit: cover;">
                                         }
-                                        <div>
-                                            <strong>@item.Product.Title</strong>
-                                            <br />
-                                            <small class="text-muted">@item.Product.Description</small>
-                                            @if (item.Product.Stock < item.Quantity)
-                                            {
-                                                <br />
-                                                <small class="text-danger">Only @item.Product.Stock left in stock!</small>
-                                            }
-                                        </div>
+                                        else
+                                        {
+                                            <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                                <i class="bi bi-image text-muted"></i>
+                                            </div>
+                                        }
                                     </div>
-                                </td>
-                                <td>@item.Product.Restaurant.Name</td>
-                                <td>$@item.Product.Price.ToString("F2")</td>
-                                <td>
-                                    <form asp-action="UpdateQuantity" method="post" class="d-inline">
-                                        <input type="hidden" name="cartItemId" value="@item.Id" />
-                                        <div class="input-group input-group-sm" style="width: 120px;">
-                                            <input type="number" name="quantity" value="@item.Quantity" min="1" max="@item.Product.Stock" class="form-control" />
-                                            <button type="submit" class="btn btn-outline-secondary">Update</button>
-                                        </div>
-                                    </form>
-                                </td>
-                                <td>$@((item.Product.Price * item.Quantity).ToString("F2"))</td>
-                                <td>
-                                    <form asp-action="Remove" method="post" class="d-inline">
-                                        <input type="hidden" name="cartItemId" value="@item.Id" />
-                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Remove this item from cart?')">Remove</button>
-                                    </form>
-                                </td>
-                            </tr>
+                                    <div class="col">
+                                        <h6 class="fw-bold mb-1">@item.Product.Title</h6>
+                                        <p class="text-muted small mb-1">@item.Product.Restaurant.Name</p>
+                                        <span class="text-primary fw-bold">@item.Product.Price.ToString("C")</span>
+                                        @if (item.Product.Stock < item.Quantity)
+                                        {
+                                            <span class="badge bg-warning text-dark ms-2">Only @item.Product.Stock left!</span>
+                                        }
+                                    </div>
+                                    <div class="col-auto">
+                                        <form asp-action="UpdateQuantity" method="post" class="d-flex align-items-center gap-2">
+                                            <input type="hidden" name="cartItemId" value="@item.Id" />
+                                            <div class="input-group" style="width: 140px;">
+                                                <input type="number" name="quantity" value="@item.Quantity" min="1" max="@item.Product.Stock" class="form-control text-center" />
+                                                <button type="submit" class="btn btn-outline-primary">
+                                                    <i class="bi bi-arrow-repeat"></i>
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="col-auto text-end">
+                                        <div class="fw-bold text-lg mb-2">@((item.Product.Price * item.Quantity).ToString("C"))</div>
+                                        <form asp-action="Remove" method="post">
+                                            <input type="hidden" name="cartItemId" value="@item.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Remove this item?')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
                         }
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Order Summary</h5>
-                        <hr />
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Items:</span>
-                            <span>@Model.Count()</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-3">
-                            <strong>Total:</strong>
-                            <strong>$@ViewBag.TotalPrice.ToString("F2")</strong>
-                        </div>
-                        <form asp-action="Checkout" method="post">
-                            <button type="submit" class="btn btn-primary w-100 mb-2">Proceed to Checkout</button>
-                        </form>
-                        <form asp-action="Clear" method="post">
-                            <button type="submit" class="btn btn-outline-secondary w-100" onclick="return confirm('Clear entire cart?')">Clear Cart</button>
-                        </form>
                     </div>
                 </div>
+            </div>
 
-                <div class="mt-3">
-                    <a asp-controller="Products" asp-action="Index" class="btn btn-outline-primary w-100">Continue Shopping</a>
+            <!-- Order Summary -->
+            <div class="col-lg-4">
+                <div class="cart-summary">
+                    <h5 class="cart-summary-title">
+                        <i class="bi bi-receipt me-2"></i>Order Summary
+                    </h5>
+
+                    <div class="cart-summary-row">
+                        <span>Subtotal (@Model.Count() items)</span>
+                        <span>@ViewBag.TotalPrice.ToString("C")</span>
+                    </div>
+                    <div class="cart-summary-row">
+                        <span>Delivery Fee</span>
+                        <span class="text-success">Free</span>
+                    </div>
+
+                    <div class="cart-summary-total">
+                        <span>Total</span>
+                        <span class="total-amount">@ViewBag.TotalPrice.ToString("C")</span>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <form asp-action="Checkout" method="post">
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="bi bi-credit-card me-2"></i>Proceed to Checkout
+                            </button>
+                        </form>
+                        <form asp-action="Clear" method="post">
+                            <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Clear entire cart?')">
+                                <i class="bi bi-trash me-2"></i>Clear Cart
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top">
+                        <a asp-controller="Restaurants" asp-action="Index" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-arrow-left me-2"></i>Continue Shopping
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     }
     else
     {
-        <div class="alert alert-info" role="alert">
-            <h4 class="alert-heading">Your cart is empty!</h4>
-            <p>Start adding some products to your cart.</p>
-            <hr />
-            <a asp-controller="Products" asp-action="Index" class="btn btn-primary">Browse Products</a>
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="bi bi-cart-x"></i>
+            </div>
+            <h3 class="empty-state-title">Your cart is empty</h3>
+            <p class="empty-state-message">Looks like you haven't added any items yet</p>
+            <a asp-controller="Restaurants" asp-action="Index" class="btn btn-primary btn-lg">
+                <i class="bi bi-shop me-2"></i>Browse Restaurants
+            </a>
         </div>
     }
 </div>

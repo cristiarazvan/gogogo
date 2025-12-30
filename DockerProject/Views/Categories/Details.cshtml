@@ -1,24 +1,61 @@
 @model DockerProject.Models.Category
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = Model.Name;
+    var isAdmin = User.IsInRole("Admin");
 }
 
-<h1>Details</h1>
-
-<div>
-    <h4>Category</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-    </dl>
+<!-- Page Header -->
+<div class="page-header mb-4">
+    <div class="page-header-content">
+        <div class="container">
+            <nav aria-label="breadcrumb" class="mb-2">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/" class="text-white-50">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-white-50">Categories</a></li>
+                    <li class="breadcrumb-item active text-white">@Model.Name</li>
+                </ol>
+            </nav>
+            <h1 class="page-title">
+                <i class="bi bi-tag me-3"></i>@Model.Name
+            </h1>
+            <p class="page-subtitle mb-0">Category Details</p>
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+
+<div class="container pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card text-center">
+                <div class="card-body p-5">
+                    <div class="feature-icon categories-icon mx-auto mb-4">
+                        <i class="bi bi-tag"></i>
+                    </div>
+                    <h2 class="fw-bold mb-3">@Model.Name</h2>
+                    <p class="text-muted mb-4">Browse restaurants in this category</p>
+
+                    <div class="d-flex flex-wrap gap-2 justify-content-center">
+                        <a asp-controller="Restaurants" asp-action="Index" asp-route-categoryFilter="@Model.Name" class="btn btn-primary btn-lg">
+                            <i class="bi bi-shop me-2"></i>View Restaurants
+                        </a>
+                        @if (isAdmin)
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary btn-lg">
+                                <i class="bi bi-pencil me-2"></i>Edit
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger btn-lg">
+                                <i class="bi bi-trash me-2"></i>Delete
+                            </a>
+                        }
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Categories
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

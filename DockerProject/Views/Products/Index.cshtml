@@ -1,95 +1,120 @@
 @model IEnumerable<DockerProject.Models.Product>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "All Products";
 }
 
-<h1>Index</h1>
+<!-- Page Header -->
+<div class="page-header mb-4">
+    <div class="page-header-content">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <nav aria-label="breadcrumb" class="mb-2">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="/" class="text-white-50">Home</a></li>
+                            <li class="breadcrumb-item active text-white">Products</li>
+                        </ol>
+                    </nav>
+                    <h1 class="page-title">All Products</h1>
+                    <p class="page-subtitle mb-0">Browse our delicious selection</p>
+                </div>
+                <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                    <a asp-action="Create" class="btn btn-light btn-lg">
+                        <i class="bi bi-plus-lg me-2"></i>Add Product
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Title)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ImagePath)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Stock)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsApproved)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Restaurant)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Category)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Title)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ImagePath)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Stock)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsApproved)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Restaurant.ImagePath)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Category.Name)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+<div class="container pb-5">
+    @if (Model.Any())
+    {
+        <div class="row g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="product-card h-100">
+                        <div class="product-card-image-wrapper">
+                            @if (!string.IsNullOrEmpty(item.ImagePath))
+                            {
+                                <img src="@item.ImagePath" class="product-card-image" alt="@item.Title">
+                            }
+                            else
+                            {
+                                <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-image fs-1 text-muted"></i>
+                                </div>
+                            }
+                            <span class="product-card-price">@item.Price.ToString("C")</span>
 
-                @if (User.Identity.IsAuthenticated)
-                {
-                    <text>|</text>
-                    <form asp-controller="Cart" asp-action="AddToCart" method="post" class="d-inline">
-                        <input type="hidden" name="productId" value="@item.Id" />
-                        <input type="hidden" name="quantity" value="1" />
-                        <button type="submit" class="btn btn-sm btn-success">
-                            <i class="bi bi-cart-plus"></i> Cart
-                        </button>
-                    </form>
-                    <form asp-controller="Favorites" asp-action="Add" method="post" class="d-inline">
-                        <input type="hidden" name="productId" value="@item.Id" />
-                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                            <i class="bi bi-heart"></i> Fav
-                        </button>
-                    </form>
-                }
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+                            @if (item.Stock <= 0)
+                            {
+                                <span class="position-absolute top-0 start-0 m-2 badge bg-danger">Out of Stock</span>
+                            }
+                            else if (item.Stock < 5)
+                            {
+                                <span class="position-absolute top-0 start-0 m-2 badge bg-warning text-dark">Low Stock</span>
+                            }
+                        </div>
+
+                        <div class="product-card-body">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                @if (item.Category != null)
+                                {
+                                    <span class="badge bg-primary-subtle text-primary rounded-pill">@item.Category.Name</span>
+                                }
+                            </div>
+                            <h5 class="product-card-title">@item.Title</h5>
+                            <p class="product-card-description">@item.Description</p>
+
+                            @if (item.Restaurant != null)
+                            {
+                                <p class="text-muted small mb-0">
+                                    <i class="bi bi-shop me-1"></i>@item.Restaurant.Name
+                                </p>
+                            }
+                        </div>
+
+                        <div class="product-card-actions">
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm flex-fill">
+                                <i class="bi bi-eye me-1"></i>View
+                            </a>
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                <form asp-controller="Cart" asp-action="AddToCart" method="post" style="display: contents;">
+                                    <input type="hidden" name="productId" value="@item.Id" />
+                                    <input type="hidden" name="quantity" value="1" />
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-cart-plus"></i>
+                                    </button>
+                                </form>
+                                <form asp-controller="Favorites" asp-action="Add" method="post" style="display: contents;">
+                                    <input type="hidden" name="productId" value="@item.Id" />
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-heart"></i>
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="bi bi-box-seam"></i>
+            </div>
+            <h3 class="empty-state-title">No products yet</h3>
+            <p class="empty-state-message">Start by adding your first product</p>
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-2"></i>Add Product
+            </a>
+        </div>
+    }
+</div>

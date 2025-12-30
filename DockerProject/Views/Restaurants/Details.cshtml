@@ -7,7 +7,7 @@
 
 @{
     ViewData["Title"] = Model.Name;
-    
+
     var currentUserId = UserManager.GetUserId(User);
     var isOwner = (currentUserId == Model.OwnerId);
     var isAdmin = User.IsInRole("Admin");
@@ -15,107 +15,222 @@
 
     double averageRating = ViewBag.AverageRating ?? 0;
     int ratingCount = ViewBag.RatingCount ?? 0;
-    int myRating = ViewBag.UserRating ?? 0; 
+    int myRating = ViewBag.UserRating ?? 0;
 }
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
 <style>
-    /* --- CSS RATING (NESCHIMBAT) --- */
-    .rating-wrapper input { display: none; }
-    .rating-wrapper { display: inline-flex; flex-direction: row-reverse; justify-content: center; }
-    .rating-wrapper label { cursor: pointer; width: 50px; font-size: 40px; color: #e4e5e9; transition: color 0.2s; line-height: 1; text-align: center; }
-    .rating-wrapper label:hover, .rating-wrapper label:hover ~ label { color: #ffc107; }
-    .rating-wrapper input:checked ~ label { color: #ffc107; }
-    .rating-wrapper label:active { transform: scale(0.9); }
+    .restaurant-hero {
+        background: var(--gradient-primary);
+        position: relative;
+        padding: 0;
+        overflow: hidden;
+    }
 
-    /* --- CSS NOU PENTRU PRODUSE (CARDURI) --- */
-    .product-card {
-        transition: all 0.3s ease;
-        border: 1px solid rgba(0,0,0,0.05);
-        overflow: hidden; /* Important pentru zoom-ul imaginii */
+    .restaurant-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        z-index: 1;
+    }
+
+    .restaurant-hero-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        object-fit: cover;
+        width: 100%;
+        height: 100%;
+        opacity: 0.3;
+    }
+
+    .restaurant-hero-content {
+        position: relative;
+        z-index: 2;
+        padding: 60px 0;
+    }
+
+    .rating-wrapper {
+        display: inline-flex;
+        flex-direction: row-reverse;
+        justify-content: center;
+        gap: 0.25rem;
+    }
+
+    .rating-wrapper input {
+        display: none;
+    }
+
+    .rating-wrapper label {
         cursor: pointer;
+        font-size: 2rem;
+        color: var(--text-muted);
+        transition: all 0.2s ease;
     }
 
-    /* Efect de ridicare la hover */
-    .product-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
-        border-color: rgba(0,0,0,0.1);
+    .rating-wrapper label:hover,
+    .rating-wrapper label:hover ~ label {
+        color: var(--warning);
+        transform: scale(1.1);
     }
 
-    /* Zoom fin pe imagine la hover */
-    .product-card .img-container img {
-        transition: transform 0.5s ease;
-    }
-    .product-card:hover .img-container img {
-        transform: scale(1.05);
+    .rating-wrapper input:checked ~ label {
+        color: var(--warning);
     }
 
-    /* Butoanele trebuie să fie "deasupra" link-ului cardului */
-    .card-actions {
-        position: relative; 
-        z-index: 2; /* Critic: Ca să poți apăsa butoanele fără să te trimită pe pagina de detalii */
+    .menu-product-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .menu-product-card:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-purple);
+        border-color: rgba(147, 51, 234, 0.4);
+    }
+
+    .menu-product-image {
+        height: 160px;
+        object-fit: cover;
+        width: 100%;
+    }
+
+    .menu-product-price {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: var(--gradient-primary);
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: var(--radius-full);
+        font-weight: 700;
+        font-size: 0.9rem;
+        box-shadow: var(--shadow-purple);
+    }
+
+    .menu-product-body {
+        padding: 1rem;
+    }
+
+    .menu-product-actions {
+        padding: 0.75rem 1rem;
+        background: var(--bg-tertiary);
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        gap: 0.5rem;
     }
 </style>
 
-<div class="container-fluid p-0 mb-5">
-    <div class="position-relative" style="height: 350px; background-color: #212529;">
-        @if (!string.IsNullOrEmpty(Model.ImagePath))
-        {
-            <img src="@Model.ImagePath" class="w-100 h-100" style="object-fit: cover; opacity: 0.5;" alt="@Model.Name">
-        }
-        
-        <div class="position-absolute top-50 start-50 translate-middle text-center w-100 px-3">
-            <h1 class="display-3 fw-bold text-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">@Model.Name</h1>
-            
-            <div class="text-white mb-2" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">
-                <span class="fs-4 text-warning fw-bold me-2">
-                    @averageRating.ToString("0.0", CultureInfo.InvariantCulture) <i class="bi bi-star-fill"></i>
-                </span>
-                <span class="opacity-75">(@ratingCount reviews)</span>
-            </div>
+<!-- Restaurant Hero -->
+<div class="restaurant-hero">
+    @if (!string.IsNullOrEmpty(Model.ImagePath))
+    {
+        <img src="@Model.ImagePath" class="restaurant-hero-image" alt="@Model.Name">
+    }
 
-            @if (Model.IsApproved == 1)
-            {
-                <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
-            }
-            else
-            {
-                <span class="badge bg-warning text-dark">Pending Approval</span>
-            }
-        </div>
-    </div>
-</div>
+    <div class="restaurant-hero-content">
+        <div class="container">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/" class="text-white-50">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-white-50">Restaurants</a></li>
+                    <li class="breadcrumb-item active text-white">@Model.Name</li>
+                </ol>
+            </nav>
 
-<div class="container mt-4">
-    <div class="row mb-5">
-        <div class="col-md-6 mb-3">
-            <div class="card border-0 shadow-sm bg-light h-100">
-                <div class="card-body">
-                    <h5 class="text-uppercase text-muted small fw-bold mb-3">Management</h5>
-                    <p class="mb-3">Owner: <strong>@(Model.Owner?.UserName ?? "Unknown")</strong></p>
-                    <div class="d-flex gap-2">
-                        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Back</a>
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                        @if (Model.IsApproved == 1)
+                        {
+                            <span class="badge bg-success rounded-pill px-3 py-2">
+                                <i class="bi bi-check-circle-fill me-1"></i>Verified
+                            </span>
+                        }
+                        else if (Model.IsApproved == 0)
+                        {
+                            <span class="badge bg-danger rounded-pill px-3 py-2">
+                                <i class="bi bi-x-circle-fill me-1"></i>Denied
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark rounded-pill px-3 py-2">
+                                <i class="bi bi-hourglass-split me-1"></i>Pending
+                            </span>
+                        }
+
+                    </div>
+
+                    <h1 class="display-5 fw-bold text-white mb-3">@Model.Name</h1>
+
+                    <div class="d-flex align-items-center gap-4 text-white flex-wrap">
+                        <div class="d-flex align-items-center">
+                            <div class="rating me-2">
+                                @for(int i = 1; i <= 5; i++) {
+                                    if(averageRating >= i) {
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                    } else if(averageRating > i - 0.5) {
+                                        <i class="bi bi-star-half text-warning"></i>
+                                    } else {
+                                        <i class="bi bi-star text-white-50"></i>
+                                    }
+                                }
+                            </div>
+                            <span class="fw-bold">@averageRating.ToString("0.0", CultureInfo.InvariantCulture)</span>
+                            <span class="text-white-50 ms-1">(@ratingCount reviews)</span>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="bi bi-person me-1"></i>@(Model.Owner?.UserName ?? "Unknown")
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+                    <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+                        <a asp-action="Index" class="btn btn-outline-light">
+                            <i class="bi bi-arrow-left me-2"></i>Back
+                        </a>
                         @if (canEdit)
                         {
-                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">Edit Info</a>
-                            <a asp-controller="Products" asp-action="Create" class="btn btn-success btn-sm">Add Product</a>
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-light">
+                                <i class="bi bi-pencil me-2"></i>Edit
+                            </a>
+                            <a asp-controller="Products" asp-action="Create" asp-route-restaurantId="@Model.Id" class="btn btn-success">
+                                <i class="bi bi-plus-lg me-2"></i>Add Product
+                            </a>
                         }
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
-        <div class="col-md-6 mb-3">
-            <div class="card border shadow-sm h-100">
-                <div class="card-body text-center d-flex flex-column justify-content-center">
-                    <h5 class="fw-bold text-uppercase mb-0">Your Rating</h5>
+<div class="container py-4">
+    <!-- Rating Card -->
+    <div class="row mb-4">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-body py-4 text-center">
+                    <h5 class="fw-bold mb-3">
+                        <i class="bi bi-star me-2 text-warning"></i>Rate this Restaurant
+                    </h5>
                     @if (User.Identity.IsAuthenticated)
                     {
                         <form asp-action="SubmitRating" method="post" id="ratingForm">
                             <input type="hidden" name="restaurantId" value="@Model.Id" />
-                            <div class="rating-wrapper mt-3">
+                            <div class="rating-wrapper">
                                 <input type="radio" id="star5" name="score" value="5" @(myRating == 5 ? "checked" : "") onchange="this.form.submit()" /><label for="star5"><i class="bi bi-star-fill"></i></label>
                                 <input type="radio" id="star4" name="score" value="4" @(myRating == 4 ? "checked" : "") onchange="this.form.submit()" /><label for="star4"><i class="bi bi-star-fill"></i></label>
                                 <input type="radio" id="star3" name="score" value="3" @(myRating == 3 ? "checked" : "") onchange="this.form.submit()" /><label for="star3"><i class="bi bi-star-fill"></i></label>
@@ -124,70 +239,98 @@
                             </div>
                         </form>
                         <div class="mt-2">
-                            @if(myRating > 0) { <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">You rated: <strong>@myRating / 5</strong></span> }
-                            else { <span class="text-muted small">Tap a star to rate</span> }
+                            @if(myRating > 0)
+                            {
+                                <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2" style="background: rgba(16, 185, 129, 0.15) !important; color: #10b981 !important;">
+                                    <i class="bi bi-check-circle me-1"></i>You rated: @myRating / 5
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">Click a star to leave your rating</span>
+                            }
                         </div>
                     }
                     else
                     {
-                        <div class="mt-3 text-muted">Please <a asp-area="Identity" asp-page="/Account/Login">login</a> to rate.</div>
+                        <div class="py-2">
+                            <p class="text-muted mb-3 small">Please log in to rate this restaurant</p>
+                            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-sm">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Login to Rate
+                            </a>
+                        </div>
                     }
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="d-flex align-items-center mb-4 border-bottom pb-2">
-        <h3 class="fw-bold m-0 me-2">Menu</h3>
-        <span class="badge bg-light text-dark border">@Model.Products?.Count Items</span>
+    <!-- Menu Section -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-book me-2" style="color: var(--primary-400);"></i>Menu
+            </h2>
+            <p class="text-muted mb-0">@(Model.Products?.Count ?? 0) items available</p>
+        </div>
     </div>
 
     @if (Model.Products != null && Model.Products.Any())
     {
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <div class="row g-4">
             @foreach (var product in Model.Products)
             {
-                <div class="col">
-                    <div class="card h-100 product-card position-relative bg-white shadow-sm border-0 rounded-3">
-                        
-                        <div class="img-container position-relative" style="height: 220px; overflow: hidden;">
+                <div class="col-sm-6 col-lg-4 col-xl-3">
+                    <div class="menu-product-card">
+                        <div class="position-relative overflow-hidden">
                             @if (!string.IsNullOrEmpty(product.ImagePath))
                             {
-                                <img src="@product.ImagePath" class="w-100 h-100" style="object-fit: cover;" alt="@product.Title">
+                                <img src="@product.ImagePath" class="menu-product-image" alt="@product.Title">
                             }
                             else
                             {
-                                <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center text-muted">No Image</div>
-                            }
-                            <span class="position-absolute bottom-0 end-0 bg-white text-dark px-3 py-1 m-2 rounded fw-bold shadow-sm" style="font-size: 1.1rem;">
-                                @product.Price.ToString("C")
-                            </span>
-                        </div>
-
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title fw-bold text-dark mb-1">@product.Title</h5>
-                            <p class="card-text text-muted small text-truncate mb-4">@product.Description</p>
-                            
-                            <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id" class="stretched-link"></a>
-                        </div>
-
-                        <div class="card-footer bg-transparent border-0 pt-0 pb-3 card-actions">
-                            @if (canEdit)
-                            {
-                                <div class="d-grid gap-2 d-flex">
-                                    <a asp-controller="Products" asp-action="Edit" asp-route-id="@product.Id" class="btn btn-warning btn-sm flex-fill fw-bold">
-                                        <i class="bi bi-pencil-fill"></i> Edit
-                                    </a>
-                                    <a asp-controller="Products" asp-action="Delete" asp-route-id="@product.Id" class="btn btn-danger btn-sm flex-fill fw-bold">
-                                        <i class="bi bi-trash-fill"></i> Delete
-                                    </a>
+                                <div class="menu-product-image d-flex align-items-center justify-content-center" style="background: var(--bg-tertiary);">
+                                    <i class="bi bi-image fs-1 text-muted"></i>
                                 </div>
                             }
-                            else
+                            <span class="menu-product-price">@product.Price.ToString("C")</span>
+                        </div>
+
+                        <div class="menu-product-body">
+                            <h6 class="fw-bold mb-1" style="color: var(--text-primary);">@product.Title</h6>
+                            <p class="small mb-0" style="color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                @product.Description
+                            </p>
+                        </div>
+
+                        <div class="menu-product-actions">
+                            <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            @if (canEdit)
                             {
-                                <button class="btn btn-outline-dark w-100 fw-bold hover-primary">
-                                    <i class="bi bi-cart-plus me-1"></i> Add to Cart
-                                </button>
+                                <a asp-controller="Products" asp-action="Edit" asp-route-id="@product.Id" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a asp-controller="Products" asp-action="Delete" asp-route-id="@product.Id" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            }
+                            else if (User.Identity.IsAuthenticated)
+                            {
+                                <form asp-controller="Cart" asp-action="AddToCart" method="post" class="d-contents">
+                                    <input type="hidden" name="productId" value="@product.Id" />
+                                    <input type="hidden" name="quantity" value="1" />
+                                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                                        <i class="bi bi-cart-plus me-1"></i>Add
+                                    </button>
+                                </form>
+                                <form asp-controller="Favorites" asp-action="Add" method="post" class="d-contents">
+                                    <input type="hidden" name="productId" value="@product.Id" />
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Add to favorites">
+                                        <i class="bi bi-heart"></i>
+                                    </button>
+                                </form>
                             }
                         </div>
                     </div>
@@ -197,9 +340,18 @@
     }
     else
     {
-        <div class="text-center py-5">
-            <i class="bi bi-cup-hot fs-1 text-muted mb-3"></i>
-            <h4 class="text-muted">Menu is empty.</h4>
+        <div class="empty-state">
+            <div class="empty-state-icon" style="background: rgba(147, 51, 234, 0.1);">
+                <i class="bi bi-cup-hot" style="color: var(--primary-400);"></i>
+            </div>
+            <h3 class="empty-state-title">Menu is empty</h3>
+            <p class="empty-state-message">This restaurant hasn't added any products yet</p>
+            @if (canEdit)
+            {
+                <a asp-controller="Products" asp-action="Create" asp-route-restaurantId="@Model.Id" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-2"></i>Add First Product
+                </a>
+            }
         </div>
     }
 </div>

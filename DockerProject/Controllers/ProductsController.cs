@@ -305,7 +305,7 @@ namespace DockerProject.Controllers
             var review = new Review
             {
                 ProductId = productId,
-                UserId = _userManager.GetUserId(User),
+                UserId = _userManager.GetUserId(User)!,
                 Text = reviewText
                 // Data = DateTime.Now
             };

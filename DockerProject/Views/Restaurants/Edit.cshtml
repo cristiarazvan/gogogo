@@ -1,70 +1,111 @@
 @model DockerProject.Models.Restaurant
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Restaurant";
 }
 
-<h1>Edit</h1>
-
-<h4>Restaurant</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-    
-            @if (!User.IsInRole("Admin"))
-            {
-                <input type="hidden" asp-for="OwnerId" />
-                <input type="hidden" asp-for="IsApproved" />
-            }
-
-            <div class="form-group mb-3">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-
-            <div class="form-group mb-3">
-                <label class="control-label">Update Image</label>
-                @if (!string.IsNullOrEmpty(Model.ImagePath))
-                {
-                    <div class="mb-2">
-                        <img src="@Model.ImagePath" style="width: 100px; height: 100px; object-fit: cover;" />
-                    </div>
-                }
-                <input type="file" name="imageFile" class="form-control" accept=".jpg,.jpeg,.png,.gif,.webp" />
-                <span asp-validation-for="ImagePath" class="text-danger"></span>
-            </div>
-
-            @if (User.IsInRole("Admin"))
-            {
-                <div class="form-group mb-3">
-                    <label asp-for="IsApproved" class="control-label">Status</label>
-                    <select asp-for="IsApproved" class="form-control">
-                        <option value="2">Pending</option>
-                        <option value="1">Approved</option>
-                        <option value="0">Denied</option>
-                    </select>
-                </div>
-        
-                <div class="form-group mb-3">
-                    <label asp-for="OwnerId" class="control-label">Assign Owner</label>
-                    <select asp-for="OwnerId" class="form-control" asp-items="ViewBag.OwnerList">
-                        <option value="">-- Select Owner --</option>
-                    </select>
-                </div>
-            }
-
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+<!-- Page Header -->
+<div class="page-header mb-4">
+    <div class="page-header-content">
+        <div class="container">
+            <nav aria-label="breadcrumb" class="mb-2">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/" class="text-white-50">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-white-50">Restaurants</a></li>
+                    <li class="breadcrumb-item active text-white">Edit</li>
+                </ol>
+            </nav>
+            <h1 class="page-title">
+                <i class="bi bi-pencil me-3"></i>Edit Restaurant
+            </h1>
+            <p class="page-subtitle mb-0">Update restaurant information</p>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+<div class="container pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body p-4 p-lg-5">
+                    <form asp-action="Edit" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                        <input type="hidden" asp-for="Id" />
+
+                        @if (!User.IsInRole("Admin"))
+                        {
+                            <input type="hidden" asp-for="OwnerId" />
+                            <input type="hidden" asp-for="IsApproved" />
+                        }
+
+                        <div class="mb-4">
+                            <label asp-for="Name" class="form-label fw-bold">Restaurant Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-shop"></i></span>
+                                <input asp-for="Name" class="form-control form-control-lg" placeholder="Enter restaurant name" />
+                            </div>
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+
+
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Restaurant Image</label>
+                            @if (!string.IsNullOrEmpty(Model.ImagePath))
+                            {
+                                <div class="mb-3">
+                                    <img src="@Model.ImagePath" class="rounded shadow-sm" style="width: 150px; height: 150px; object-fit: cover;" alt="Current image" />
+                                    <p class="text-muted small mt-2">Current image</p>
+                                </div>
+                            }
+                            <input type="file" name="imageFile" class="form-control form-control-lg" accept=".jpg,.jpeg,.png,.gif,.webp" />
+                            <div class="form-text">Upload a new image to replace the current one</div>
+                            <span asp-validation-for="ImagePath" class="text-danger small"></span>
+                        </div>
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <div class="card bg-light mb-4">
+                                <div class="card-header bg-transparent">
+                                    <h6 class="mb-0 fw-bold">
+                                        <i class="bi bi-shield-lock me-2"></i>Admin Options
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label asp-for="IsApproved" class="form-label fw-bold">Status</label>
+                                        <select asp-for="IsApproved" class="form-select">
+                                            <option value="2">Pending</option>
+                                            <option value="1">Approved</option>
+                                            <option value="0">Denied</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-0">
+                                        <label asp-for="OwnerId" class="form-label fw-bold">Assign Owner</label>
+                                        <select asp-for="OwnerId" class="form-select" asp-items="ViewBag.OwnerList">
+                                            <option value="">-- Select Owner --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary btn-lg flex-grow-1">
+                                <i class="bi bi-check-lg me-2"></i>Save Changes
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-x-lg me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,59 +1,88 @@
 @model DockerProject.Models.CreateUserViewModel
 
 @{
-    ViewData["Title"] = "Create New User";
+    ViewData["Title"] = "Add User";
 }
 
-<div class="container mt-5">
+<!-- Page Header -->
+<div class="page-header mb-4">
+    <div class="page-header-content">
+        <div class="container">
+            <nav aria-label="breadcrumb" class="mb-2">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/" class="text-white-50">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-white-50">Users</a></li>
+                    <li class="breadcrumb-item active text-white">Add New</li>
+                </ol>
+            </nav>
+            <h1 class="page-title">
+                <i class="bi bi-person-plus me-3"></i>Add User
+            </h1>
+            <p class="page-subtitle mb-0">Create a new user account</p>
+        </div>
+    </div>
+</div>
+
+<div class="container pb-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Adaugă Utilizator Nou</h4>
-                </div>
-                <div class="card-body">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-body p-4 p-lg-5">
                     <form asp-action="Create" method="post">
-                        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                        <div asp-validation-summary="All" class="alert alert-danger"></div>
 
-                        <div class="mb-3">
-                            <label asp-for="Email" class="form-label"></label>
-                            <input asp-for="Email" class="form-control" placeholder="exemplu@email.com" />
-                            <span asp-validation-for="Email" class="text-danger"></span>
+                        <div class="mb-4">
+                            <label asp-for="Email" class="form-label fw-bold">Email Address</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input asp-for="Email" class="form-control" placeholder="user@example.com" />
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="FullName" class="form-label"></label>
-                            <input asp-for="FullName" class="form-control" placeholder="Nume complet" />
-                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        <div class="mb-4">
+                            <label asp-for="FullName" class="form-label fw-bold">Full Name</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input asp-for="FullName" class="form-control" placeholder="John Doe" />
+                            </div>
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Password" class="form-label"></label>
-                            <input asp-for="Password" class="form-control" />
-                            <span asp-validation-for="Password" class="text-danger"></span>
-                            <small class="form-text text-muted">Minimum 6 caractere</small>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="Password" class="form-label fw-bold">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                    <input asp-for="Password" class="form-control" />
+                                </div>
+                                <span asp-validation-for="Password" class="text-danger small"></span>
+                                <div class="form-text">Minimum 6 characters</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="ConfirmPassword" class="form-label fw-bold">Confirm Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                                    <input asp-for="ConfirmPassword" class="form-control" />
+                                </div>
+                                <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="ConfirmPassword" class="form-label"></label>
-                            <input asp-for="ConfirmPassword" class="form-control" />
-                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="SelectedRole" class="form-label"></label>
-                            <select asp-for="SelectedRole" asp-items="@ViewBag.Roles" class="form-select">
-                                <option value="">-- Selectează un rol --</option>
+                        <div class="mb-4">
+                            <label asp-for="SelectedRole" class="form-label fw-bold">User Role</label>
+                            <select asp-for="SelectedRole" asp-items="@ViewBag.Roles" class="form-select form-select-lg">
+                                <option value="">-- Select a role --</option>
                             </select>
-                            <span asp-validation-for="SelectedRole" class="text-danger"></span>
+                            <span asp-validation-for="SelectedRole" class="text-danger small"></span>
                         </div>
 
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-check-circle"></i> Creează Utilizator
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary btn-lg flex-grow-1">
+                                <i class="bi bi-check-lg me-2"></i>Create User
                             </button>
-                            <a asp-action="Index" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left"></i> Înapoi la Listă
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-x-lg me-2"></i>Cancel
                             </a>
                         </div>
                     </form>

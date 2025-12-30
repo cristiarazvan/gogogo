@@ -1,57 +1,149 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Home";
 }
 
+<!-- Hero Section -->
 <div class="hero-section">
     <div class="hero-content">
-        <h1 class="hero-title">Welcome to Restaurant Manager</h1>
-        <p class="hero-subtitle">Manage your restaurants and categories with ease</p>
+        <h1 class="hero-title">Delicious Food,<br>Delivered Fast</h1>
+        <p class="hero-subtitle">Discover the best restaurants in your area and order your favorite meals with just a few clicks</p>
+        <div class="hero-cta">
+            <a asp-controller="Restaurants" asp-action="Index" class="btn btn-light btn-lg">
+                <i class="bi bi-search me-2"></i>Explore Restaurants
+            </a>
+            <a asp-controller="Categories" asp-action="Index" class="btn btn-outline-light btn-lg">
+                <i class="bi bi-grid-3x3-gap me-2"></i>Browse Categories
+            </a>
+        </div>
     </div>
 </div>
 
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <h2 class="section-title text-center mb-5">What would you like to do?</h2>
-
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <div class="feature-card">
-                        <div class="feature-icon restaurants-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M8.5 3.5a2.5 2.5 0 0 0-5 0v9a1.5 1.5 0 0 0 3 0V6h1.5v6.5a1.5 1.5 0 0 0 3 0v-9zm4-1a.5.5 0 0 0-.5.5v9a1.5 1.5 0 0 1-3 0v-9a.5.5 0 0 0-1 0v9a2.5 2.5 0 0 0 5 0V3a.5.5 0 0 0-.5-.5z"/>
-                            </svg>
-                        </div>
-                        <h3 class="feature-title">Restaurants</h3>
-                        <p class="feature-description">Browse, manage, and organize your restaurant listings. Add new venues or update existing ones.</p>
-                        <a asp-controller="Restaurants" asp-action="Index" class="btn btn-primary btn-lg feature-btn">View Restaurants</a>
+<!-- Stats Section -->
+<div class="container" style="margin-top: -40px; position: relative; z-index: 10;">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card text-center p-4 hover-lift">
+                <div class="d-flex justify-content-center mb-3">
+                    <div class="feature-icon restaurants-icon">
+                        <i class="bi bi-shop"></i>
                     </div>
                 </div>
-
-                <div class="col-md-6">
-                    <div class="feature-card">
-                        <div class="feature-icon categories-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/>
-                            </svg>
-                        </div>
-                        <h3 class="feature-title">Categories</h3>
-                        <p class="feature-description">Organize restaurants by categories. Create new categories or modify existing classification systems.</p>
-                        <a asp-controller="Categories" asp-action="Index" class="btn btn-success btn-lg feature-btn">View Categories</a>
+                <h3 class="h2 fw-bold text-gradient mb-1">100+</h3>
+                <p class="text-muted mb-0">Partner Restaurants</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center p-4 hover-lift">
+                <div class="d-flex justify-content-center mb-3">
+                    <div class="feature-icon categories-icon">
+                        <i class="bi bi-people"></i>
                     </div>
+                </div>
+                <h3 class="h2 fw-bold text-gradient mb-1">50K+</h3>
+                <p class="text-muted mb-0">Happy Customers</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center p-4 hover-lift">
+                <div class="d-flex justify-content-center mb-3">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; box-shadow: 0 10px 40px -10px rgba(16, 185, 129, 0.4);">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                </div>
+                <h3 class="h2 fw-bold text-gradient mb-1">30 min</h3>
+                <p class="text-muted mb-0">Average Delivery</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container my-5 py-5">
+    <div class="text-center mb-5">
+        <h2 class="section-title">What would you like today?</h2>
+        <p class="section-subtitle">Choose from our wide variety of options</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="feature-card">
+                <div class="feature-icon restaurants-icon">
+                    <i class="bi bi-shop"></i>
+                </div>
+                <h3 class="feature-title">Explore Restaurants</h3>
+                <p class="feature-description">Discover amazing restaurants near you. Browse menus, check ratings, and find your new favorite dining spot.</p>
+                <a asp-controller="Restaurants" asp-action="Index" class="btn btn-primary btn-lg feature-btn">
+                    <i class="bi bi-arrow-right me-2"></i>View Restaurants
+                </a>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="feature-card">
+                <div class="feature-icon categories-icon">
+                    <i class="bi bi-grid-3x3-gap"></i>
+                </div>
+                <h3 class="feature-title">Browse by Category</h3>
+                <p class="feature-description">Looking for something specific? Browse restaurants by cuisine type and find exactly what you're craving.</p>
+                <a asp-controller="Categories" asp-action="Index" class="btn btn-primary btn-lg feature-btn" style="background: var(--gradient-secondary);">
+                    <i class="bi bi-arrow-right me-2"></i>View Categories
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="info-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="info-title">How It Works</h2>
+            <p class="text-muted">Order your food in just 3 simple steps</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-4"
+                         style="width: 70px; height: 70px; background: var(--gradient-primary); color: white; font-size: 1.75rem; font-weight: 700;">
+                        1
+                    </div>
+                    <h4 class="fw-bold mb-2">Choose Restaurant</h4>
+                    <p class="text-muted">Browse through our partner restaurants and pick your favorite</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-4"
+                         style="width: 70px; height: 70px; background: var(--gradient-primary); color: white; font-size: 1.75rem; font-weight: 700;">
+                        2
+                    </div>
+                    <h4 class="fw-bold mb-2">Select Your Meal</h4>
+                    <p class="text-muted">Add delicious items to your cart from the menu</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-4"
+                         style="width: 70px; height: 70px; background: var(--gradient-primary); color: white; font-size: 1.75rem; font-weight: 700;">
+                        3
+                    </div>
+                    <h4 class="fw-bold mb-2">Fast Delivery</h4>
+                    <p class="text-muted">Get your order delivered to your doorstep quickly</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="info-section">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-md-12 text-center">
-                <h3 class="info-title">Streamline Your Restaurant Management</h3>
-                <p class="info-text">Our intuitive platform helps you keep track of all your restaurants and organize them efficiently with custom categories.</p>
-            </div>
+<!-- CTA Section -->
+<div class="container my-5 py-5">
+    <div class="card p-4 p-md-5 text-center" style="background: var(--gradient-primary); border: none;">
+        <h2 class="text-white fw-bold mb-3">Ready to Order?</h2>
+        <p class="text-white opacity-75 mb-4">Join thousands of satisfied customers and experience the best food delivery service</p>
+        <div>
+            <a asp-controller="Restaurants" asp-action="Index" class="btn btn-light btn-lg px-5">
+                <i class="bi bi-bag-check me-2"></i>Start Ordering
+            </a>
         </div>
     </div>
 </div>

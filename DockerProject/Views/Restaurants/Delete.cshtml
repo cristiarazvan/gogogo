@@ -1,45 +1,82 @@
 @model DockerProject.Models.Restaurant
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Delete Restaurant";
 }
 
-<h1>Delete</h1>
+<!-- Page Header -->
+<div class="page-header mb-4">
+    <div class="page-header-content">
+        <div class="container">
+            <nav aria-label="breadcrumb" class="mb-2">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/" class="text-white-50">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-white-50">Restaurants</a></li>
+                    <li class="breadcrumb-item active text-white">Delete</li>
+                </ol>
+            </nav>
+            <h1 class="page-title">
+                <i class="bi bi-trash me-3"></i>Delete Restaurant
+            </h1>
+            <p class="page-subtitle mb-0">Confirm restaurant deletion</p>
+        </div>
+    </div>
+</div>
 
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>Restaurant</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ImagePath)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ImagePath)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsApproved)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsApproved)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Owner)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Owner.Id)
-        </dd>
-    </dl>
-    
-    <form asp-action="Delete">
-        <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
-    </form>
+<div class="container pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-body p-4 p-lg-5 text-center">
+                    <div class="mb-4">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-danger-subtle text-danger mb-3" style="width: 80px; height: 80px;">
+                            <i class="bi bi-exclamation-triangle fs-1"></i>
+                        </div>
+                        <h3 class="fw-bold">Delete Restaurant?</h3>
+                        <p class="text-muted">This action cannot be undone</p>
+                    </div>
+
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center gap-3">
+                                @if (!string.IsNullOrEmpty(Model.ImagePath))
+                                {
+                                    <img src="@Model.ImagePath" class="rounded" style="width: 80px; height: 80px; object-fit: cover;" alt="@Model.Name" />
+                                }
+                                else
+                                {
+                                    <div class="bg-secondary rounded d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                        <i class="bi bi-shop text-white fs-3"></i>
+                                    </div>
+                                }
+                                <div class="text-start">
+                                    <h5 class="fw-bold mb-1">@Model.Name</h5>
+                                    <p class="text-muted small mb-0">
+                                        Owner: @(Model.Owner?.UserName ?? "Unknown")
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        All products associated with this restaurant will also be deleted!
+                    </div>
+
+                    <form asp-action="Delete">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-flex gap-3">
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-lg flex-grow-1">
+                                <i class="bi bi-x-lg me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger btn-lg flex-grow-1">
+                                <i class="bi bi-trash me-2"></i>Delete
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

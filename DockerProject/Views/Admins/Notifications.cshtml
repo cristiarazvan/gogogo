@@ -1,283 +1,357 @@
 @model DockerProject.Models.NotificationsViewModel
 
 @{
-    ViewData["Title"] = "Notificări - Aprobare Pendente";
+    ViewData["Title"] = "Notifications";
+    var pendingCount = Model.PendingRestaurants.Count + Model.PendingProducts.Count;
 }
 
-<div class="container mt-5">
-    <!-- Success/Error Messages -->
+<!-- Page Header -->
+<div class="page-header mb-4">
+    <div class="page-header-content">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <nav aria-label="breadcrumb" class="mb-2">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="/" class="text-white-50">Home</a></li>
+                            <li class="breadcrumb-item"><a href="#" class="text-white-50">Admin</a></li>
+                            <li class="breadcrumb-item active text-white">Notifications</li>
+                        </ol>
+                    </nav>
+                    <h1 class="page-title">
+                        <i class="bi bi-bell me-3"></i>Notifications
+                    </h1>
+                    <p class="page-subtitle mb-0">Manage pending approvals and requests</p>
+                </div>
+                <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                    @if (pendingCount > 0)
+                    {
+                        <span class="badge bg-white text-primary fs-5 px-4 py-2">
+                            @pendingCount Pending
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container pb-5">
     @if (TempData["Success"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
+
     @if (TempData["Error"] != null)
     {
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
+            <i class="bi bi-exclamation-circle me-2"></i>@TempData["Error"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-bell"></i> Notificări & Aprobări</h2>
-        <span class="badge bg-primary fs-5">
-            @(Model.PendingRestaurants.Count + Model.PendingProducts.Count) în așteptare
-        </span>
-    </div>
-
     @if (Model.PendingRestaurants.Count == 0 && Model.PendingProducts.Count == 0 && Model.DeniedRestaurants.Count == 0)
     {
-        <div class="alert alert-info" role="alert">
-            <h4 class="alert-heading">Totul este în ordine!</h4>
-            <p>Nu există restaurante sau produse în așteptarea aprobării.</p>
+        <div class="empty-state">
+            <div class="empty-state-icon" style="background: var(--success-light); color: var(--success);">
+                <i class="bi bi-check-lg"></i>
+            </div>
+            <h3 class="empty-state-title">All caught up!</h3>
+            <p class="empty-state-message">There are no pending approvals at this time</p>
+            <a asp-action="Index" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left me-2"></i>Back to Users
+            </a>
         </div>
     }
-
-    <!-- Pending Restaurants Section -->
-    @if (Model.PendingRestaurants.Count > 0)
+    else
     {
-        <div class="mb-5">
-            <h3 class="mb-3">
-                <i class="bi bi-shop"></i> Restaurante în Așteptare
-                <span class="badge bg-warning text-dark">@Model.PendingRestaurants.Count</span>
-            </h3>
-            <div class="row">
-                @foreach (var restaurant in Model.PendingRestaurants)
-                {
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card h-100 shadow-sm border-warning">
-                            <div class="card-header bg-warning text-dark">
-                                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Pending Approval</h5>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title">@restaurant.Name</h5>
-                                <p class="card-text">
-                                    <strong>Proprietar:</strong> @restaurant.OwnerName<br/>
-                                    <strong>Email:</strong> @restaurant.OwnerEmail<br/>
-                                    <small class="text-muted">Imagine: @restaurant.ImagePath</small>
-                                </p>
-                            </div>
-                            <div class="card-footer bg-transparent">
-                                <div class="d-grid gap-2">
-                                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveRestaurantModal@(restaurant.Id)">
-                                        <i class="bi bi-check-circle"></i> Aprobă
-                                    </button>
-                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectRestaurantModal@(restaurant.Id)">
-                                        <i class="bi bi-x-circle"></i> Respinge
-                                    </button>
-                                </div>
+        <!-- Pending Restaurants Section -->
+        @if (Model.PendingRestaurants.Count > 0)
+        {
+            <div class="mb-5">
+                <div class="d-flex align-items-center mb-4">
+                    <h3 class="fw-bold mb-0">
+                        <i class="bi bi-shop text-warning me-2"></i>Pending Restaurants
+                    </h3>
+                    <span class="badge bg-warning-subtle text-warning rounded-pill ms-2 px-3 py-2">
+                        @Model.PendingRestaurants.Count pending
+                    </span>
+                </div>
 
-                                <!-- Approve Modal -->
-                                <div class="modal fade" id="approveRestaurantModal@(restaurant.Id)" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header bg-success text-white">
-                                                <h5 class="modal-title">Confirmă Aprobarea</h5>
-                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                Sigur vrei să aprobi restaurantul <strong>@restaurant.Name</strong>?
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anulează</button>
-                                                <form asp-action="ApproveRestaurant" method="post" class="d-inline">
-                                                    @Html.AntiForgeryToken()
-                                                    <input type="hidden" name="id" value="@restaurant.Id" />
-                                                    <button type="submit" class="btn btn-success">Aprobă Restaurant</button>
-                                                </form>
+                <div class="row g-4">
+                    @foreach (var restaurant in Model.PendingRestaurants)
+                    {
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100" style="border-top: 4px solid var(--warning);">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <span class="badge bg-warning-subtle text-warning rounded-pill px-3 py-2">
+                                            <i class="bi bi-clock me-1"></i>Pending
+                                        </span>
+                                    </div>
+                                    <h5 class="fw-bold mb-3">@restaurant.Name</h5>
+                                    <div class="text-muted small mb-3">
+                                        <p class="mb-1"><i class="bi bi-person me-2"></i>@restaurant.OwnerName</p>
+                                        <p class="mb-0"><i class="bi bi-envelope me-2"></i>@restaurant.OwnerEmail</p>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveRestaurantModal@(restaurant.Id)">
+                                            <i class="bi bi-check-lg me-2"></i>Approve
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectRestaurantModal@(restaurant.Id)">
+                                            <i class="bi bi-x-lg me-2"></i>Reject
+                                        </button>
+                                    </div>
+
+                                    <!-- Approve Modal -->
+                                    <div class="modal fade" id="approveRestaurantModal@(restaurant.Id)" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title fw-bold">
+                                                        <i class="bi bi-check-circle text-success me-2"></i>Approve Restaurant
+                                                    </h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to approve <strong>@restaurant.Name</strong>?</p>
+                                                    <p class="text-muted small mb-0">The restaurant will become publicly visible.</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <form asp-action="ApproveRestaurant" method="post" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@restaurant.Id" />
+                                                        <button type="submit" class="btn btn-success">
+                                                            <i class="bi bi-check-lg me-2"></i>Approve
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <!-- Reject Modal -->
-                                <div class="modal fade" id="rejectRestaurantModal@(restaurant.Id)" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header bg-danger text-white">
-                                                <h5 class="modal-title">Confirmă Respingerea</h5>
-                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                Sigur vrei să respingi restaurantul <strong>@restaurant.Name</strong>?
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anulează</button>
-                                                <form asp-action="RejectRestaurant" method="post" class="d-inline">
-                                                    @Html.AntiForgeryToken()
-                                                    <input type="hidden" name="id" value="@restaurant.Id" />
-                                                    <button type="submit" class="btn btn-danger">Respinge</button>
-                                                </form>
+                                    <!-- Reject Modal -->
+                                    <div class="modal fade" id="rejectRestaurantModal@(restaurant.Id)" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title fw-bold">
+                                                        <i class="bi bi-x-circle text-danger me-2"></i>Reject Restaurant
+                                                    </h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to reject <strong>@restaurant.Name</strong>?</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <form asp-action="RejectRestaurant" method="post" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@restaurant.Id" />
+                                                        <button type="submit" class="btn btn-danger">
+                                                            <i class="bi bi-x-lg me-2"></i>Reject
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                }
+                    }
+                </div>
             </div>
-        </div>
-    }
+        }
 
-    <!-- Denied Restaurants Section -->
-    @if (Model.DeniedRestaurants.Count > 0)
-    {
-        <div class="mb-5">
-            <h3 class="mb-3">
-                <i class="bi bi-x-circle"></i> Restaurante Respinse
-                <span class="badge bg-danger">@Model.DeniedRestaurants.Count</span>
-            </h3>
-            <div class="row">
-                @foreach (var restaurant in Model.DeniedRestaurants)
-                {
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card h-100 shadow-sm border-danger">
-                            <div class="card-header bg-danger text-white">
-                                <h5 class="mb-0"><i class="bi bi-x-circle"></i> Respins</h5>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title">@restaurant.Name</h5>
-                                <p class="card-text">
-                                    <strong>Proprietar:</strong> @restaurant.OwnerName<br/>
-                                    <strong>Email:</strong> @restaurant.OwnerEmail<br/>
-                                    <small class="text-muted">Imagine: @restaurant.ImagePath</small>
-                                </p>
-                            </div>
-                            <div class="card-footer bg-transparent">
-                                <div class="d-grid gap-2">
-                                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#reapproveRestaurantModal@(restaurant.Id)">
-                                        <i class="bi bi-arrow-counterclockwise"></i> Reaprobă
-                                    </button>
+        <!-- Denied Restaurants Section -->
+        @if (Model.DeniedRestaurants.Count > 0)
+        {
+            <div class="mb-5">
+                <div class="d-flex align-items-center mb-4">
+                    <h3 class="fw-bold mb-0">
+                        <i class="bi bi-shop text-danger me-2"></i>Rejected Restaurants
+                    </h3>
+                    <span class="badge bg-danger-subtle text-danger rounded-pill ms-2 px-3 py-2">
+                        @Model.DeniedRestaurants.Count rejected
+                    </span>
+                </div>
+
+                <div class="row g-4">
+                    @foreach (var restaurant in Model.DeniedRestaurants)
+                    {
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100" style="border-top: 4px solid var(--danger);">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <span class="badge bg-danger-subtle text-danger rounded-pill px-3 py-2">
+                                            <i class="bi bi-x-circle me-1"></i>Rejected
+                                        </span>
+                                    </div>
+                                    <h5 class="fw-bold mb-3">@restaurant.Name</h5>
+                                    <div class="text-muted small mb-3">
+                                        <p class="mb-1"><i class="bi bi-person me-2"></i>@restaurant.OwnerName</p>
+                                        <p class="mb-0"><i class="bi bi-envelope me-2"></i>@restaurant.OwnerEmail</p>
+                                    </div>
                                 </div>
+                                <div class="card-footer bg-transparent">
+                                    <button type="button" class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#reapproveRestaurantModal@(restaurant.Id)">
+                                        <i class="bi bi-arrow-counterclockwise me-2"></i>Reapprove
+                                    </button>
 
-                                <!-- Reapprove Modal -->
-                                <div class="modal fade" id="reapproveRestaurantModal@(restaurant.Id)" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header bg-success text-white">
-                                                <h5 class="modal-title">Confirmă Reaprobarea</h5>
-                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                Sigur vrei să reaprobă restaurantul <strong>@restaurant.Name</strong>?
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anulează</button>
-                                                <form asp-action="ReapproveRestaurant" method="post" class="d-inline">
-                                                    @Html.AntiForgeryToken()
-                                                    <input type="hidden" name="id" value="@restaurant.Id" />
-                                                    <button type="submit" class="btn btn-success">Reaprobă Restaurant</button>
-                                                </form>
+                                    <!-- Reapprove Modal -->
+                                    <div class="modal fade" id="reapproveRestaurantModal@(restaurant.Id)" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title fw-bold">
+                                                        <i class="bi bi-arrow-counterclockwise text-success me-2"></i>Reapprove Restaurant
+                                                    </h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to reapprove <strong>@restaurant.Name</strong>?</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <form asp-action="ReapproveRestaurant" method="post" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@restaurant.Id" />
+                                                        <button type="submit" class="btn btn-success">
+                                                            <i class="bi bi-check-lg me-2"></i>Reapprove
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                }
+                    }
+                </div>
             </div>
-        </div>
-    }
+        }
 
-    <!-- Pending Products Section -->
-    @if (Model.PendingProducts.Count > 0)
-    {
-        <div class="mb-5">
-            <h3 class="mb-3">
-                <i class="bi bi-box-seam"></i> Produse în Așteptare
-                <span class="badge bg-warning text-dark">@Model.PendingProducts.Count</span>
-            </h3>
-            <div class="row">
-                @foreach (var product in Model.PendingProducts)
-                {
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card h-100 shadow-sm border-warning">
-                            <div class="card-header bg-warning text-dark">
-                                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Pending Approval</h5>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title">@product.Title</h5>
-                                <p class="card-text">
-                                    <strong>Restaurant:</strong> @product.RestaurantName<br/>
-                                    <strong>Categorie:</strong> @product.CategoryName<br/>
-                                    <strong>Preț:</strong> @product.Price.ToString("C2")<br/>
-                                    <strong>Stoc:</strong> @product.Stock bucăți<br/>
-                                    <small class="text-muted">@product.Description</small>
-                                </p>
-                            </div>
-                            <div class="card-footer bg-transparent">
-                                <div class="d-grid gap-2">
-                                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveProductModal@(product.Id)">
-                                        <i class="bi bi-check-circle"></i> Aprobă
-                                    </button>
-                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectProductModal@(product.Id)">
-                                        <i class="bi bi-x-circle"></i> Respinge
-                                    </button>
+        <!-- Pending Products Section -->
+        @if (Model.PendingProducts.Count > 0)
+        {
+            <div class="mb-5">
+                <div class="d-flex align-items-center mb-4">
+                    <h3 class="fw-bold mb-0">
+                        <i class="bi bi-box-seam text-warning me-2"></i>Pending Products
+                    </h3>
+                    <span class="badge bg-warning-subtle text-warning rounded-pill ms-2 px-3 py-2">
+                        @Model.PendingProducts.Count pending
+                    </span>
+                </div>
+
+                <div class="row g-4">
+                    @foreach (var product in Model.PendingProducts)
+                    {
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100" style="border-top: 4px solid var(--warning);">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <span class="badge bg-warning-subtle text-warning rounded-pill px-3 py-2">
+                                            <i class="bi bi-clock me-1"></i>Pending
+                                        </span>
+                                        <span class="fw-bold text-primary">@product.Price.ToString("C")</span>
+                                    </div>
+                                    <h5 class="fw-bold mb-2">@product.Title</h5>
+                                    <p class="text-muted small mb-3 text-truncate">@product.Description</p>
+                                    <div class="text-muted small">
+                                        <p class="mb-1"><i class="bi bi-shop me-2"></i>@product.RestaurantName</p>
+                                        <p class="mb-1"><i class="bi bi-tag me-2"></i>@product.CategoryName</p>
+                                        <p class="mb-0"><i class="bi bi-box me-2"></i>@product.Stock in stock</p>
+                                    </div>
                                 </div>
+                                <div class="card-footer bg-transparent">
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveProductModal@(product.Id)">
+                                            <i class="bi bi-check-lg me-2"></i>Approve
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectProductModal@(product.Id)">
+                                            <i class="bi bi-x-lg me-2"></i>Reject
+                                        </button>
+                                    </div>
 
-                                <!-- Approve Modal -->
-                                <div class="modal fade" id="approveProductModal@(product.Id)" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header bg-success text-white">
-                                                <h5 class="modal-title">Confirmă Aprobarea</h5>
-                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                Sigur vrei să aprobi produsul <strong>@product.Title</strong>?
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anulează</button>
-                                                <form asp-action="ApproveProduct" method="post" class="d-inline">
-                                                    @Html.AntiForgeryToken()
-                                                    <input type="hidden" name="id" value="@product.Id" />
-                                                    <button type="submit" class="btn btn-success">Aprobă Produs</button>
-                                                </form>
+                                    <!-- Approve Modal -->
+                                    <div class="modal fade" id="approveProductModal@(product.Id)" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title fw-bold">
+                                                        <i class="bi bi-check-circle text-success me-2"></i>Approve Product
+                                                    </h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to approve <strong>@product.Title</strong>?</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <form asp-action="ApproveProduct" method="post" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@product.Id" />
+                                                        <button type="submit" class="btn btn-success">
+                                                            <i class="bi bi-check-lg me-2"></i>Approve
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <!-- Reject Modal -->
-                                <div class="modal fade" id="rejectProductModal@(product.Id)" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header bg-danger text-white">
-                                                <h5 class="modal-title">Confirmă Respingerea</h5>
-                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                Sigur vrei să respingi produsul <strong>@product.Title</strong>?
-                                                <br/><br/>
-                                                <span class="text-danger">Produsul va fi șters permanent!</span>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anulează</button>
-                                                <form asp-action="RejectProduct" method="post" class="d-inline">
-                                                    @Html.AntiForgeryToken()
-                                                    <input type="hidden" name="id" value="@product.Id" />
-                                                    <button type="submit" class="btn btn-danger">Respinge & Șterge</button>
-                                                </form>
+                                    <!-- Reject Modal -->
+                                    <div class="modal fade" id="rejectProductModal@(product.Id)" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title fw-bold">
+                                                        <i class="bi bi-x-circle text-danger me-2"></i>Reject Product
+                                                    </h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to reject <strong>@product.Title</strong>?</p>
+                                                    <div class="alert alert-danger mb-0">
+                                                        <i class="bi bi-exclamation-circle me-2"></i>
+                                                        The product will be permanently deleted!
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <form asp-action="RejectProduct" method="post" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@product.Id" />
+                                                        <button type="submit" class="btn btn-danger">
+                                                            <i class="bi bi-trash me-2"></i>Reject & Delete
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                }
+                    }
+                </div>
             </div>
+        }
+
+        <!-- Back Button -->
+        <div class="mt-4">
+            <a asp-action="Index" class="btn btn-outline-secondary btn-lg">
+                <i class="bi bi-arrow-left me-2"></i>Back to User Management
+            </a>
         </div>
     }
-
-    <div class="mt-4 mb-5">
-        <a asp-action="Index" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> Înapoi la Administrare Utilizatori
-        </a>
-    </div>
 </div>

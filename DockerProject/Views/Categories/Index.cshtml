@@ -1,35 +1,126 @@
 @model IEnumerable<DockerProject.Models.Category>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Categories";
+    var isAdmin = User.IsInRole("Admin");
+    var categoryColors = new[] {
+        "linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)",
+        "linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)",
+        "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+        "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+        "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+        "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
+        "linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)",
+        "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)"
+    };
+    var categoryIcons = new[] { "bi-egg-fried", "bi-cup-hot", "bi-basket", "bi-fire", "bi-cake2", "bi-droplet", "bi-snow", "bi-lightning" };
+    var index = 0;
 }
 
-<h1>Index</h1>
+<!-- Page Header -->
+<div class="page-header mb-4">
+    <div class="page-header-content">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <nav aria-label="breadcrumb" class="mb-2">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="/" class="text-white-50">Home</a></li>
+                            <li class="breadcrumb-item active text-white">Categories</li>
+                        </ol>
+                    </nav>
+                    <h1 class="page-title">
+                        <i class="bi bi-grid-3x3-gap me-3"></i>Food Categories
+                    </h1>
+                    <p class="page-subtitle mb-0">Discover restaurants by your favorite cuisine</p>
+                </div>
+                @if (isAdmin)
+                {
+                    <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                        <a asp-action="Create" class="btn btn-light btn-lg">
+                            <i class="bi bi-plus-lg me-2"></i>Add Category
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+<div class="container pb-5">
+    @if (Model.Any())
+    {
+        <div class="row g-4">
+            @foreach (var item in Model)
+            {
+                var colorIndex = index % categoryColors.Length;
+                var iconIndex = index % categoryIcons.Length;
+                <div class="col-sm-6 col-lg-4 col-xl-3">
+                    <div class="category-card">
+                        <div class="category-icon" style="background: @categoryColors[colorIndex]; color: white; box-shadow: 0 10px 30px -10px rgba(147, 51, 234, 0.4);">
+                            <i class="bi @categoryIcons[iconIndex]"></i>
+                        </div>
+                        <h4 class="category-name">@item.Name</h4>
+                        <p class="category-count">
+                            <i class="bi bi-shop me-1"></i>Explore restaurants
+                        </p>
+                        <div class="d-flex flex-wrap gap-2 justify-content-center">
+                            <a asp-controller="Restaurants" asp-action="Index" asp-route-categoryFilter="@item.Name" class="btn btn-primary btn-sm">
+                                <i class="bi bi-arrow-right me-1"></i>Browse
+                            </a>
+                            @if (isAdmin)
+                            {
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+                index++;
+            }
+        </div>
+
+        <!-- Quick Stats Section -->
+        <div class="mt-5 pt-4">
+            <div class="card" style="background: var(--gradient-primary); border: none;">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="text-white fw-bold mb-2">
+                                <i class="bi bi-stars me-2"></i>@Model.Count() Categories Available
+                            </h3>
+                            <p class="text-white opacity-75 mb-0">
+                                Explore our diverse range of cuisines and find your perfect meal
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                            <a asp-controller="Restaurants" asp-action="Index" class="btn btn-light btn-lg">
+                                <i class="bi bi-shop me-2"></i>View All Restaurants
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon" style="background: rgba(147, 51, 234, 0.1);">
+                <i class="bi bi-tags" style="color: var(--primary-400);"></i>
+            </div>
+            <h3 class="empty-state-title">No categories yet</h3>
+            <p class="empty-state-message">Categories help organize restaurants by cuisine type</p>
+            @if (isAdmin)
+            {
+                <a asp-action="Create" class="btn btn-primary btn-lg">
+                    <i class="bi bi-plus-lg me-2"></i>Create First Category
+                </a>
+            }
+        </div>
+    }
+</div>
