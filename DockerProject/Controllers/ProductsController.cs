@@ -52,6 +52,16 @@ namespace DockerProject.Controllers
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (product == null) return NotFound();
+            
+            var currentUserId = _userManager.GetUserId(User);
+    
+            if (currentUserId != null && product.Reviews != null)
+            {
+                product.Reviews = product.Reviews
+                    .OrderByDescending(r => r.UserId == currentUserId)
+                    .ThenByDescending(r => r.Id)
+                    .ToList();
+            }
 
             return View(product);
         }
@@ -280,6 +290,71 @@ namespace DockerProject.Controllers
         private bool ProductExists(int id)
         {
             return _context.Products.Any(e => e.Id == id);
+        }
+        
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddReview(int productId, string reviewText)
+        {
+            if (string.IsNullOrWhiteSpace(reviewText))
+            {
+                return RedirectToAction(nameof(Details), new { id = productId });
+            }
+
+            var review = new Review
+            {
+                ProductId = productId,
+                UserId = _userManager.GetUserId(User),
+                Text = reviewText
+                // Data = DateTime.Now
+            };
+
+            _context.Reviews.Add(review);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Details), new { id = productId });
+        }
+            
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditReview(int reviewId, int productId, string newText)
+        {
+            if (string.IsNullOrWhiteSpace(newText))
+            {
+                return RedirectToAction(nameof(Details), new { id = productId });
+            }
+
+            var review = await _context.Reviews.FindAsync(reviewId);
+            var currentUserId = _userManager.GetUserId(User);
+
+            if (review != null && (review.UserId == currentUserId || User.IsInRole("Admin")))
+            {
+                review.Text = newText;
+                // review.Date = DateTime.Now;
+                _context.Update(review);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Details), new { id = productId });
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteReview(int reviewId, int productId)
+        {
+            var review = await _context.Reviews.FindAsync(reviewId);
+            var currentUserId = _userManager.GetUserId(User);
+
+            if (review != null && (review.UserId == currentUserId || User.IsInRole("Admin")))
+            {
+                _context.Reviews.Remove(review);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Details), new { id = productId });
         }
     }
 }

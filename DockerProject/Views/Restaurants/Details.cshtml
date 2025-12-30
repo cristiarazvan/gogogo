@@ -1,158 +1,205 @@
 @using Microsoft.AspNetCore.Identity
 @using DockerProject.Models
+@using System.Globalization
 
 @model DockerProject.Models.Restaurant
-
-/* Injectăm UserManager pentru a vedea cine este logat */
 @inject UserManager<ApplicationUser> UserManager
 
 @{
-    ViewData["Title"] = "Restaurant Details";
+    ViewData["Title"] = Model.Name;
+    
     var currentUserId = UserManager.GetUserId(User);
     var isOwner = (currentUserId == Model.OwnerId);
     var isAdmin = User.IsInRole("Admin");
     var canEdit = isOwner || isAdmin;
+
+    double averageRating = ViewBag.AverageRating ?? 0;
+    int ratingCount = ViewBag.RatingCount ?? 0;
+    int myRating = ViewBag.UserRating ?? 0; 
 }
 
-<div class="container mt-4">
-    <div class="card mb-5 shadow-sm border-0">
-        <div class="row g-0">
-            <div class="col-md-4">
-                @if (!string.IsNullOrEmpty(Model.ImagePath))
-                {
-                    <img src="@Model.ImagePath" class="img-fluid rounded-start h-100" style="object-fit: cover; min-height: 250px; width: 100%;" alt="@Model.Name">
-                }
-                else
-                {
-                    <img src="https://via.placeholder.com/400x300?text=No+Restaurant+Image" class="img-fluid rounded-start h-100" style="object-fit: cover; width: 100%;" alt="No Image">
-                }
-            </div>
-            <div class="col-md-8">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h1 class="card-title display-5">@Model.Name</h1>
-                        @if (Model.IsApproved == 1)
-                        {
-                            <span class="badge bg-success">Verified <i class="bi bi-check-circle"></i></span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-warning text-dark">Pending Approval</span>
-                        }
-                    </div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-                    <p class="card-text text-muted">
-                        <strong>Owner:</strong> @(Model.Owner?.UserName ?? "Unknown")
-                    </p>
-                    
-                    <div class="mt-4">
+<style>
+    /* --- CSS RATING (NESCHIMBAT) --- */
+    .rating-wrapper input { display: none; }
+    .rating-wrapper { display: inline-flex; flex-direction: row-reverse; justify-content: center; }
+    .rating-wrapper label { cursor: pointer; width: 50px; font-size: 40px; color: #e4e5e9; transition: color 0.2s; line-height: 1; text-align: center; }
+    .rating-wrapper label:hover, .rating-wrapper label:hover ~ label { color: #ffc107; }
+    .rating-wrapper input:checked ~ label { color: #ffc107; }
+    .rating-wrapper label:active { transform: scale(0.9); }
+
+    /* --- CSS NOU PENTRU PRODUSE (CARDURI) --- */
+    .product-card {
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.05);
+        overflow: hidden; /* Important pentru zoom-ul imaginii */
+        cursor: pointer;
+    }
+
+    /* Efect de ridicare la hover */
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+        border-color: rgba(0,0,0,0.1);
+    }
+
+    /* Zoom fin pe imagine la hover */
+    .product-card .img-container img {
+        transition: transform 0.5s ease;
+    }
+    .product-card:hover .img-container img {
+        transform: scale(1.05);
+    }
+
+    /* Butoanele trebuie să fie "deasupra" link-ului cardului */
+    .card-actions {
+        position: relative; 
+        z-index: 2; /* Critic: Ca să poți apăsa butoanele fără să te trimită pe pagina de detalii */
+    }
+</style>
+
+<div class="container-fluid p-0 mb-5">
+    <div class="position-relative" style="height: 350px; background-color: #212529;">
+        @if (!string.IsNullOrEmpty(Model.ImagePath))
+        {
+            <img src="@Model.ImagePath" class="w-100 h-100" style="object-fit: cover; opacity: 0.5;" alt="@Model.Name">
+        }
+        
+        <div class="position-absolute top-50 start-50 translate-middle text-center w-100 px-3">
+            <h1 class="display-3 fw-bold text-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">@Model.Name</h1>
+            
+            <div class="text-white mb-2" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">
+                <span class="fs-4 text-warning fw-bold me-2">
+                    @averageRating.ToString("0.0", CultureInfo.InvariantCulture) <i class="bi bi-star-fill"></i>
+                </span>
+                <span class="opacity-75">(@ratingCount reviews)</span>
+            </div>
+
+            @if (Model.IsApproved == 1)
+            {
+                <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
+            }
+            else
+            {
+                <span class="badge bg-warning text-dark">Pending Approval</span>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="row mb-5">
+        <div class="col-md-6 mb-3">
+            <div class="card border-0 shadow-sm bg-light h-100">
+                <div class="card-body">
+                    <h5 class="text-uppercase text-muted small fw-bold mb-3">Management</h5>
+                    <p class="mb-3">Owner: <strong>@(Model.Owner?.UserName ?? "Unknown")</strong></p>
+                    <div class="d-flex gap-2">
+                        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Back</a>
                         @if (canEdit)
                         {
-                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary me-2">Edit Restaurant</a>
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">Edit Info</a>
+                            <a asp-controller="Products" asp-action="Create" class="btn btn-success btn-sm">Add Product</a>
                         }
-                        <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="card border shadow-sm h-100">
+                <div class="card-body text-center d-flex flex-column justify-content-center">
+                    <h5 class="fw-bold text-uppercase mb-0">Your Rating</h5>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <form asp-action="SubmitRating" method="post" id="ratingForm">
+                            <input type="hidden" name="restaurantId" value="@Model.Id" />
+                            <div class="rating-wrapper mt-3">
+                                <input type="radio" id="star5" name="score" value="5" @(myRating == 5 ? "checked" : "") onchange="this.form.submit()" /><label for="star5"><i class="bi bi-star-fill"></i></label>
+                                <input type="radio" id="star4" name="score" value="4" @(myRating == 4 ? "checked" : "") onchange="this.form.submit()" /><label for="star4"><i class="bi bi-star-fill"></i></label>
+                                <input type="radio" id="star3" name="score" value="3" @(myRating == 3 ? "checked" : "") onchange="this.form.submit()" /><label for="star3"><i class="bi bi-star-fill"></i></label>
+                                <input type="radio" id="star2" name="score" value="2" @(myRating == 2 ? "checked" : "") onchange="this.form.submit()" /><label for="star2"><i class="bi bi-star-fill"></i></label>
+                                <input type="radio" id="star1" name="score" value="1" @(myRating == 1 ? "checked" : "") onchange="this.form.submit()" /><label for="star1"><i class="bi bi-star-fill"></i></label>
+                            </div>
+                        </form>
+                        <div class="mt-2">
+                            @if(myRating > 0) { <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">You rated: <strong>@myRating / 5</strong></span> }
+                            else { <span class="text-muted small">Tap a star to rate</span> }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mt-3 text-muted">Please <a asp-area="Identity" asp-page="/Account/Login">login</a> to rate.</div>
+                    }
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Menu / Products</h2>
-        
-        @if (canEdit)
-        {
-            <a asp-controller="Products" asp-action="Create" class="btn btn-success">
-                <i class="bi bi-plus-lg"></i> Add New Product
-            </a>
-        }
+    <div class="d-flex align-items-center mb-4 border-bottom pb-2">
+        <h3 class="fw-bold m-0 me-2">Menu</h3>
+        <span class="badge bg-light text-dark border">@Model.Products?.Count Items</span>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        @if (Model.Products != null && Model.Products.Any())
-        {
+    @if (Model.Products != null && Model.Products.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             @foreach (var product in Model.Products)
             {
                 <div class="col">
-                    <div class="card h-100 shadow-sm product-card">
-                        <div style="height: 200px; overflow: hidden;">
+                    <div class="card h-100 product-card position-relative bg-white shadow-sm border-0 rounded-3">
+                        
+                        <div class="img-container position-relative" style="height: 220px; overflow: hidden;">
                             @if (!string.IsNullOrEmpty(product.ImagePath))
                             {
-                                <img src="@product.ImagePath" class="card-img-top" alt="@product.Title" style="height: 100%; width: 100%; object-fit: cover;">
+                                <img src="@product.ImagePath" class="w-100 h-100" style="object-fit: cover;" alt="@product.Title">
                             }
                             else
                             {
-                                <img src="https://via.placeholder.com/300x200?text=No+Food+Image" class="card-img-top" alt="No Image" style="height: 100%; width: 100%; object-fit: cover;">
+                                <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center text-muted">No Image</div>
                             }
+                            <span class="position-absolute bottom-0 end-0 bg-white text-dark px-3 py-1 m-2 rounded fw-bold shadow-sm" style="font-size: 1.1rem;">
+                                @product.Price.ToString("C")
+                            </span>
                         </div>
 
                         <div class="card-body d-flex flex-column">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h5 class="card-title fw-bold">@product.Title</h5>
-                                <span class="badge bg-primary fs-6">@product.Price.ToString("C")</span>
-                            </div>
+                            <h5 class="card-title fw-bold text-dark mb-1">@product.Title</h5>
+                            <p class="card-text text-muted small text-truncate mb-4">@product.Description</p>
                             
-                            <p class="card-text text-muted flex-grow-1">
-                                @if (product.Description != null && product.Description.Length > 100)
-                                {
-                                    @product.Description.Substring(0, 100) <text>...</text>
-                                }
-                                else
-                                {
-                                    @product.Description
-                                }
-                            </p>
+                            <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id" class="stretched-link"></a>
+                        </div>
 
-                            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-                                <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id" class="btn btn-sm btn-info text-white">Details</a>
-
-                                @if (canEdit)
-                                {
-                                    <div class="btn-group">
-                                        <a asp-controller="Products" asp-action="Edit" asp-route-id="@product.Id" class="btn btn-sm btn-outline-warning">Edit</a>
-                                        <a asp-controller="Products" asp-action="Delete" asp-route-id="@product.Id" class="btn btn-sm btn-outline-danger">Delete</a>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <div class="btn-group">
-                                        @if (User.Identity.IsAuthenticated)
-                                        {
-                                            <form asp-controller="Cart" asp-action="AddToCart" method="post" class="d-inline">
-                                                <input type="hidden" name="productId" value="@product.Id" />
-                                                <input type="hidden" name="quantity" value="1" />
-                                                <button type="submit" class="btn btn-sm btn-success">
-                                                    <i class="bi bi-cart-plus"></i> Add to Cart
-                                                </button>
-                                            </form>
-                                            <form asp-controller="Favorites" asp-action="Add" method="post" class="d-inline">
-                                                <input type="hidden" name="productId" value="@product.Id" />
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                    <i class="bi bi-heart"></i>
-                                                </button>
-                                            </form>
-                                        }
-                                        else
-                                        {
-                                            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-sm btn-success">Login to Order</a>
-                                        }
-                                    </div>
-                                }
-                            </div>
+                        <div class="card-footer bg-transparent border-0 pt-0 pb-3 card-actions">
+                            @if (canEdit)
+                            {
+                                <div class="d-grid gap-2 d-flex">
+                                    <a asp-controller="Products" asp-action="Edit" asp-route-id="@product.Id" class="btn btn-warning btn-sm flex-fill fw-bold">
+                                        <i class="bi bi-pencil-fill"></i> Edit
+                                    </a>
+                                    <a asp-controller="Products" asp-action="Delete" asp-route-id="@product.Id" class="btn btn-danger btn-sm flex-fill fw-bold">
+                                        <i class="bi bi-trash-fill"></i> Delete
+                                    </a>
+                                </div>
+                            }
+                            else
+                            {
+                                <button class="btn btn-outline-dark w-100 fw-bold hover-primary">
+                                    <i class="bi bi-cart-plus me-1"></i> Add to Cart
+                                </button>
+                            }
                         </div>
                     </div>
                 </div>
             }
-        }
-        else
-        {
-            <div class="col-12 text-center py-5">
-                <h4 class="text-muted">No products available yet.</h4>
-                @if (canEdit)
-                {
-                    <p>Start adding delicious items to your menu!</p>
-                }
-            </div>
-        }
-    </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-cup-hot fs-1 text-muted mb-3"></i>
+            <h4 class="text-muted">Menu is empty.</h4>
+        </div>
+    }
 </div>

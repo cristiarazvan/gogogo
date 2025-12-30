@@ -32,13 +32,84 @@ namespace DockerProject.Controllers
 
         // GET: Restaurants
         [AllowAnonymous]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string sortOrder, string[] categoryFilter)
         {
-            var applicationDbContext = _context.Restaurants.Include(r => r.Owner);
-            return View(await applicationDbContext.ToListAsync());
+            // 1. Populăm Dropdown-ul cu categorii
+            ViewBag.Categories = await _context.Categories
+                                               .Select(c => c.Name)
+                                               .Distinct()
+                                               .ToListAsync();
+
+            // Păstrăm parametrii
+            ViewBag.CurrentSort = sortOrder;
+            ViewBag.CurrentFilter = categoryFilter;
+
+            // 2. Query de Bază (Doar interogare, fără sortare încă)
+            var restaurantsQuery = _context.Restaurants
+                .Include(r => r.Owner)
+                .Include(r => r.Ratings)
+                .Include(r => r.Products)
+                .ThenInclude(p => p.Category)
+                .AsQueryable();
+
+            // 3. APLICARE FILTRU (Categorie) - Asta merge pe SQL
+            if (categoryFilter != null && categoryFilter.Length > 0)
+            {
+                restaurantsQuery = restaurantsQuery.Where(r => r.Products.Any(p => categoryFilter.Contains(p.Category.Name)));
+            }
+
+            // --- PUNCTUL CRITIC: ADUCEM DATELE ÎN MEMORIE ---
+            // Facem asta ACUM pentru a putea sorta cu logică complexă C# (User Owner) fără erori SQL
+            var restaurantsList = await restaurantsQuery.ToListAsync();
+
+            // 4. APLICARE SORTARE (Pe lista din memorie)
+            if (!string.IsNullOrEmpty(sortOrder))
+            {
+                switch (sortOrder)
+                {
+                    case "RatingDesc":
+                        restaurantsList = restaurantsList.OrderByDescending(r => r.Ratings.Any() ? r.Ratings.Average(rt => rt.Score) : 0).ToList();
+                        break;
+                    case "RatingAsc":
+                        restaurantsList = restaurantsList.OrderBy(r => r.Ratings.Any() ? r.Ratings.Average(rt => rt.Score) : 0).ToList();
+                        break;
+                    case "NameAsc":
+                        restaurantsList = restaurantsList.OrderBy(r => r.Name).ToList();
+                        break;
+                    default:
+                        restaurantsList = restaurantsList.OrderBy(r => r.Name).ToList();
+                        break;
+                }
+            }
+            else
+            {
+                // 5. SORTARE DEFAULT (Aici apărea eroarea)
+                // Regula: Restaurantele mele primele -> Apoi Verificate -> Apoi Nume
+                
+                if (User.Identity.IsAuthenticated)
+                {
+                    var currentUserId = _userManager.GetUserId(User);
+                    
+                    // Această comparație (r.OwnerId == currentUserId) merge doar în memorie!
+                    restaurantsList = restaurantsList
+                        .OrderByDescending(r => r.OwnerId == currentUserId) // True (1) sus, False (0) jos
+                        .ThenByDescending(r => r.IsApproved == 1)
+                        .ThenBy(r => r.Name)
+                        .ToList();
+                }
+                else
+                {
+                    restaurantsList = restaurantsList
+                        .OrderByDescending(r => r.IsApproved == 1)
+                        .ThenBy(r => r.Name)
+                        .ToList();
+                }
+            }
+
+            return View(restaurantsList);
         }
 
-        // GET: Restaurants/Details/5
+        // GET: Restaurants/Details
         [AllowAnonymous]
         public async Task<IActionResult> Details(int? id)
         {
@@ -52,6 +123,30 @@ namespace DockerProject.Controllers
 
             if (restaurant == null) return NotFound();
 
+            double averageRating = 0;
+            int ratingCount = 0;
+    
+            if (restaurant.Ratings != null && restaurant.Ratings.Any())
+            {
+                averageRating = restaurant.Ratings.Average(r => r.Score);
+                ratingCount = restaurant.Ratings.Count;
+            }
+
+            int userRating = 0;
+            if (User.Identity.IsAuthenticated)
+            {
+                var userId = _userManager.GetUserId(User);
+                var existingRating = restaurant.Ratings?.FirstOrDefault(r => r.UserId == userId);
+                if (existingRating != null)
+                {
+                    userRating = existingRating.Score;
+                }
+            }
+
+            ViewBag.AverageRating = averageRating;
+            ViewBag.RatingCount = ratingCount;
+            ViewBag.UserRating = userRating;
+            
             return View(restaurant);
         }
 
@@ -247,6 +342,39 @@ namespace DockerProject.Controllers
         private bool RestaurantExists(int id)
         {
             return _context.Restaurants.Any(e => e.Id == id);
+        }
+        
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SubmitRating(int restaurantId, int score)
+        {
+            if (score < 1 || score > 5) return BadRequest("Invalid score");
+
+            var userId = _userManager.GetUserId(User);
+    
+            var existingRating = await _context.RestaurantRating
+                .FirstOrDefaultAsync(r => r.RestaurantId == restaurantId && r.UserId == userId);
+
+            if (existingRating != null)
+            {
+                existingRating.Score = score;
+                _context.Update(existingRating);
+            }
+            else
+            {
+                var newRating = new RestaurantRating
+                {
+                    RestaurantId = restaurantId,
+                    UserId = userId,
+                    Score = score
+                };
+                _context.Add(newRating);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Details), new { id = restaurantId });
         }
     }
 }
