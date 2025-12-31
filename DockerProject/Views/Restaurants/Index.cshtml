@@ -11,10 +11,26 @@
     var currentUserId = UserManager.GetUserId(User);
     var isAdmin = User.IsInRole("Admin");
 
+    // 1. Parametrii curenți
     var currentSort = ViewBag.CurrentSort as string;
+    var currentSearch = ViewBag.CurrentSearch as string;
+    
+    // Tratăm filtrele de categorie ca Single Select (primul element)
+    var currentFilters = ViewBag.CurrentFilter as string[];
+    var activeCategory = (currentFilters != null && currentFilters.Any()) ? currentFilters.First() : null;
+    
+    var allCategories = ViewBag.Categories as List<string>;
+
+    // UI Helpers
+    string filterLabel = !string.IsNullOrEmpty(activeCategory) ? activeCategory : "Category";
+    string filterBtnClass = !string.IsNullOrEmpty(activeCategory) ? "btn-secondary text-white" : "btn-outline-secondary";
+    
+    // Verificăm dacă există vreun filtru activ pentru a afișa butonul de Reset
+    bool hasActiveFilters = !string.IsNullOrEmpty(currentSort) || 
+                            !string.IsNullOrEmpty(activeCategory) || 
+                            !string.IsNullOrEmpty(currentSearch);
 }
 
-<!-- Page Header -->
 <div class="page-header mb-4">
     <div class="page-header-content">
         <div class="container">
@@ -43,28 +59,87 @@
 </div>
 
 <div class="container pb-5">
-    <!-- Toolbar -->
     <div class="toolbar">
+        
         <div class="toolbar-search">
-            <i class="bi bi-search"></i>
-            <input type="text" class="form-control form-control-lg" placeholder="Search restaurants...">
+            <form asp-action="Index" method="get" class="d-flex w-100 align-items-center position-relative">
+                <i class="bi bi-search position-absolute ps-3 text-muted" style="z-index: 5;"></i>
+                
+                <input type="text" name="searchString" value="@currentSearch" 
+                       class="form-control form-control-lg ps-5" 
+                       placeholder="Search restaurants or food (e.g. 'Pizza')..." 
+                       style="border-radius: 50px;">
+
+                @if (!string.IsNullOrEmpty(currentSort))
+                {
+                    <input type="hidden" name="sortOrder" value="@currentSort" />
+                }
+                @if (!string.IsNullOrEmpty(activeCategory))
+                {
+                    <input type="hidden" name="categoryFilter" value="@activeCategory" />
+                }
+            </form>
         </div>
 
         <div class="toolbar-filters d-flex gap-2 flex-wrap">
-            <!-- Sort Dropdown -->
+            
+            <div class="dropdown">
+                <button class="btn btn-lg @filterBtnClass dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-funnel me-2"></i>@filterLabel
+                </button>
+                
+                <ul class="dropdown-menu shadow" style="max-height: 300px; overflow-y: auto;">
+                    <li><h6 class="dropdown-header">Filter by Category</h6></li>
+                    
+                    <li>
+                        <a class="dropdown-item @(string.IsNullOrEmpty(activeCategory) ? "active" : "")" 
+                           asp-action="Index" 
+                           asp-route-sortOrder="@currentSort"
+                           asp-route-searchString="@currentSearch">
+                           All Categories
+                        </a>
+                    </li>
+                    
+                    <li><hr class="dropdown-divider"></li>
+                    
+                    @if (allCategories != null)
+                    {
+                        foreach (var cat in allCategories)
+                        {
+                            <li>
+                                <a class="dropdown-item @(activeCategory == cat ? "active" : "")" 
+                                   asp-action="Index" 
+                                   asp-route-categoryFilter="@cat"
+                                   asp-route-sortOrder="@currentSort"
+                                   asp-route-searchString="@currentSearch">
+                                   @cat
+                                </a>
+                            </li>
+                        }
+                    }
+                </ul>
+            </div>
+
             <div class="dropdown">
                 <button class="btn btn-lg btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                     <i class="bi bi-sort-down me-2"></i>Sort
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow">
                     @{
+                        // Helper pentru a genera link-uri de sortare care nu pierd filtrele
                         string GetSortUrl(string sortValue)
                         {
                             var routeValues = new Dictionary<string, object?>();
+                            
                             if (!string.IsNullOrEmpty(sortValue))
-                            {
                                 routeValues["sortOrder"] = sortValue;
-                            }
+                                
+                            if (!string.IsNullOrEmpty(activeCategory))
+                                routeValues["categoryFilter"] = activeCategory;
+
+                            if (!string.IsNullOrEmpty(currentSearch))
+                                routeValues["searchString"] = currentSearch;
+
                             return Url.Action("Index", routeValues) ?? "#";
                         }
                     }
@@ -76,17 +151,15 @@
                 </ul>
             </div>
 
-            <!-- Clear Filters -->
-            @if (!string.IsNullOrEmpty(currentSort))
+            @if (hasActiveFilters)
             {
-                <a asp-action="Index" class="btn btn-lg btn-outline-danger" title="Clear All Filters">
+                <a asp-action="Index" class="btn btn-lg btn-outline-danger" title="Clear All Filters & Search">
                     <i class="bi bi-x-lg"></i>
                 </a>
             }
         </div>
     </div>
 
-    <!-- Restaurant Grid -->
     <div class="row g-4">
         @if (!Model.Any())
         {
@@ -96,7 +169,10 @@
                         <i class="bi bi-search" style="color: var(--primary-400);"></i>
                     </div>
                     <h3 class="empty-state-title">No restaurants found</h3>
-                    <p class="empty-state-message">Try adjusting your filters or search terms</p>
+                    <p class="empty-state-message">
+                        @if(!string.IsNullOrEmpty(currentSearch)) { <span>No results for "<strong>@currentSearch</strong>".</span> }
+                        Try adjusting your filters.
+                    </p>
                     <a asp-action="Index" class="btn btn-primary">
                         <i class="bi bi-arrow-counterclockwise me-2"></i>Clear Filters
                     </a>
@@ -118,7 +194,10 @@
                             <div class="col-md-4 position-relative" style="overflow: hidden;">
                                 @if (!string.IsNullOrEmpty(item.ImagePath))
                                 {
-                                    <img src="@item.ImagePath" class="restaurant-card-image h-100" alt="@item.Name">
+                                    <img src="@item.ImagePath" 
+                                         class="restaurant-card-image w-100 h-100" 
+                                         style="object-fit: cover; min-height: 250px;" 
+                                         alt="@item.Name">
                                 }
                                 else
                                 {
@@ -127,25 +206,18 @@
                                     </div>
                                 }
 
-                                <!-- Status Badge -->
                                 <div class="position-absolute top-0 start-0 m-3">
                                     @if (item.IsApproved == 1)
                                     {
-                                        <span class="badge bg-success rounded-pill px-3 py-2 shadow">
-                                            <i class="bi bi-check-circle-fill me-1"></i>Verified
-                                        </span>
+                                        <span class="badge bg-success rounded-pill px-3 py-2 shadow"><i class="bi bi-check-circle-fill me-1"></i>Verified</span>
                                     }
                                     else if (item.IsApproved == 0)
                                     {
-                                        <span class="badge bg-danger rounded-pill px-3 py-2 shadow">
-                                            <i class="bi bi-x-circle-fill me-1"></i>Denied
-                                        </span>
+                                        <span class="badge bg-danger rounded-pill px-3 py-2 shadow"><i class="bi bi-x-circle-fill me-1"></i>Denied</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-warning text-dark rounded-pill px-3 py-2 shadow">
-                                            <i class="bi bi-hourglass-split me-1"></i>Pending
-                                        </span>
+                                        <span class="badge bg-warning text-dark rounded-pill px-3 py-2 shadow"><i class="bi bi-hourglass-split me-1"></i>Pending</span>
                                     }
                                 </div>
                             </div>
@@ -155,58 +227,39 @@
                                     <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
                                         <div>
                                             <h3 class="restaurant-card-title mb-1">@item.Name</h3>
-                                            <p class="text-muted small mb-0">
-                                                <i class="bi bi-person me-1"></i>Managed by @(item.Owner?.UserName ?? "Unknown")
-                                            </p>
+                                            <p class="text-muted small mb-0"><i class="bi bi-person me-1"></i>Managed by @(item.Owner?.UserName ?? "Unknown")</p>
                                         </div>
                                         @if (isOwner)
                                         {
-                                            <span class="badge bg-primary rounded-pill px-3">
-                                                <i class="bi bi-star-fill me-1"></i>Your Restaurant
-                                            </span>
+                                            <span class="badge bg-primary rounded-pill px-3"><i class="bi bi-star-fill me-1"></i>Your Restaurant</span>
                                         }
                                     </div>
 
-                                    <!-- Product Count -->
                                     @if (item.Products != null && item.Products.Any())
                                     {
                                         <div class="mb-3">
-                                            <span class="restaurant-card-category">
-                                                <i class="bi bi-box me-1"></i>@item.Products.Count products
-                                            </span>
+                                            <span class="restaurant-card-category"><i class="bi bi-box me-1"></i>@item.Products.Count products</span>
                                         </div>
                                     }
 
-                                    <!-- Rating -->
                                     <div class="d-flex align-items-center mb-4">
                                         <div class="rating me-2">
                                             @for(int i = 1; i <= 5; i++) {
-                                                if(avgRating >= i) {
-                                                    <i class="bi bi-star-fill"></i>
-                                                } else if(avgRating > i - 0.5) {
-                                                    <i class="bi bi-star-half"></i>
-                                                } else {
-                                                    <i class="bi bi-star"></i>
-                                                }
+                                                if(avgRating >= i) { <i class="bi bi-star-fill"></i> }
+                                                else if(avgRating > i - 0.5) { <i class="bi bi-star-half"></i> }
+                                                else { <i class="bi bi-star"></i> }
                                             }
                                         </div>
                                         <span class="rating-value">@avgRating.ToString("0.0", CultureInfo.InvariantCulture)</span>
                                         <span class="text-muted small ms-1">(@countRating reviews)</span>
                                     </div>
 
-                                    <!-- Actions -->
                                     <div class="mt-auto d-flex flex-wrap gap-2">
-                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-primary">
-                                            <i class="bi bi-eye me-2"></i>View Menu
-                                        </a>
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-primary"><i class="bi bi-eye me-2"></i>View Menu</a>
                                         @if (canManage)
                                         {
-                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary">
-                                                <i class="bi bi-pencil me-2"></i>Edit
-                                            </a>
-                                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger">
-                                                <i class="bi bi-trash me-2"></i>Delete
-                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary"><i class="bi bi-pencil me-2"></i>Edit</a>
+                                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger"><i class="bi bi-trash me-2"></i>Delete</a>
                                         }
                                     </div>
                                 </div>

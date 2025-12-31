@@ -32,19 +32,20 @@ namespace DockerProject.Controllers
 
         // GET: Restaurants
         [AllowAnonymous]
-        public async Task<IActionResult> Index(string sortOrder, string[] categoryFilter)
+        public async Task<IActionResult> Index(string sortOrder, string[] categoryFilter, string searchString)
         {
-            // 1. Populăm Dropdown-ul cu categorii
+            // 1. Populăm categoriile
             ViewBag.Categories = await _context.Categories
                                                .Select(c => c.Name)
                                                .Distinct()
                                                .ToListAsync();
 
-            // Păstrăm parametrii
+            // Păstrăm parametrii în ViewBag
             ViewBag.CurrentSort = sortOrder;
             ViewBag.CurrentFilter = categoryFilter;
+            ViewBag.CurrentSearch = searchString; // <--- Păstrăm ce a scris userul în search bar
 
-            // 2. Query de Bază (Doar interogare, fără sortare încă)
+            // 2. Query de Bază
             var restaurantsQuery = _context.Restaurants
                 .Include(r => r.Owner)
                 .Include(r => r.Ratings)
@@ -52,17 +53,26 @@ namespace DockerProject.Controllers
                 .ThenInclude(p => p.Category)
                 .AsQueryable();
 
-            // 3. APLICARE FILTRU (Categorie) - Asta merge pe SQL
+            // --- LOGICA DE CĂUTARE (SMART SEARCH) ---
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                // Căutăm textul în Numele Restaurantului SAU în Titlul Produselor SAU în Descrierea Produselor
+                restaurantsQuery = restaurantsQuery.Where(r => 
+                    r.Name.Contains(searchString) || 
+                    r.Products.Any(p => p.Title.Contains(searchString) || p.Description.Contains(searchString))
+                );
+            }
+
+            // 3. APLICARE FILTRU (Categorie)
             if (categoryFilter != null && categoryFilter.Length > 0)
             {
                 restaurantsQuery = restaurantsQuery.Where(r => r.Products.Any(p => categoryFilter.Contains(p.Category.Name)));
             }
 
-            // --- PUNCTUL CRITIC: ADUCEM DATELE ÎN MEMORIE ---
-            // Facem asta ACUM pentru a putea sorta cu logică complexă C# (User Owner) fără erori SQL
+            // Aducem datele în memorie
             var restaurantsList = await restaurantsQuery.ToListAsync();
 
-            // 4. APLICARE SORTARE (Pe lista din memorie)
+            // 4. APLICARE SORTARE
             if (!string.IsNullOrEmpty(sortOrder))
             {
                 switch (sortOrder)
@@ -83,16 +93,12 @@ namespace DockerProject.Controllers
             }
             else
             {
-                // 5. SORTARE DEFAULT (Aici apărea eroarea)
-                // Regula: Restaurantele mele primele -> Apoi Verificate -> Apoi Nume
-                
+                // Sortare Default
                 if (User.Identity.IsAuthenticated)
                 {
                     var currentUserId = _userManager.GetUserId(User);
-                    
-                    // Această comparație (r.OwnerId == currentUserId) merge doar în memorie!
                     restaurantsList = restaurantsList
-                        .OrderByDescending(r => r.OwnerId == currentUserId) // True (1) sus, False (0) jos
+                        .OrderByDescending(r => r.OwnerId == currentUserId)
                         .ThenByDescending(r => r.IsApproved == 1)
                         .ThenBy(r => r.Name)
                         .ToList();
@@ -107,8 +113,8 @@ namespace DockerProject.Controllers
             }
 
             return View(restaurantsList);
-        }
-
+        } 
+        
         // GET: Restaurants/Details
         [AllowAnonymous]
         public async Task<IActionResult> Details(int? id)
