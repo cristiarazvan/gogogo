@@ -1,0 +1,296 @@
+{
+  "faq": {
+    "lastUpdated": "2026-01-06",
+    "categories": [
+      {
+        "name": "Delivery",
+        "icon": "bi-truck",
+        "questions": [
+          {
+            "id": 1,
+            "question": "How long does it take for my order to arrive?",
+            "answer": "Delivery time varies depending on the restaurant and distance. On average, orders arrive in 30-45 minutes. You can see the estimated delivery time before placing the order."
+          },
+          {
+            "id": 2,
+            "question": "What is the delivery cost?",
+            "answer": "The delivery cost depends on the distance to your address and the chosen restaurant. Some restaurants offer free delivery for orders over a certain value. The exact cost is displayed before finalizing the order."
+          },
+          {
+            "id": 3,
+            "question": "Can I track my order in real-time?",
+            "answer": "Yes, after placing the order you can track its status in the 'My Orders' section of your account. You will receive notifications at every stage: order accepted, being prepared, picked up by courier, on its way to you."
+          },
+          {
+            "id": 4,
+            "question": "What should I do if the order is delayed?",
+            "answer": "If your order is delayed more than 15 minutes beyond the estimated time, please contact us via chat or phone. We will investigate the situation and find a quick solution."
+          },
+          {
+            "id": 5,
+            "question": "Do you deliver to any area?",
+            "answer": "The delivery area depends on each individual restaurant. When you enter your address, we will show you only the restaurants that deliver to your area."
+          }
+        ]
+      },
+      {
+        "name": "Orders",
+        "icon": "bi-bag-check",
+        "questions": [
+          {
+            "id": 6,
+            "question": "How do I place an order?",
+            "answer": "It's very simple! 1) Choose a restaurant from the list. 2) Add the desired products to the cart. 3) Check the cart and delivery address. 4) Choose the payment method. 5) Confirm the order. Done!"
+          },
+          {
+            "id": 7,
+            "question": "Can I modify the order after placing it?",
+            "answer": "You can modify the order only within the first 2 minutes after placing it, as long as the restaurant has not started preparing it. After this interval, please contact us directly for assistance."
+          },
+          {
+            "id": 8,
+            "question": "Can I cancel an order?",
+            "answer": "Yes, you can cancel the order for free within the first 2 minutes. After the restaurant has started preparation, cancellation may involve partial fees. Contact us for more details."
+          },
+          {
+            "id": 9,
+            "question": "What is the minimum order value?",
+            "answer": "The minimum order value differs from restaurant to restaurant. This information is displayed on each restaurant's page."
+          },
+          {
+            "id": 10,
+            "question": "Can I order from multiple restaurants at once?",
+            "answer": "Currently, each order can be placed from a single restaurant. To order from multiple restaurants, you will need to place separate orders."
+          },
+          {
+            "id": 11,
+            "question": "Can I schedule an order for later?",
+            "answer": "Yes, you can schedule the order for a later time. During the ordering process, select the 'Schedule delivery' option and choose the desired date and time."
+          }
+        ]
+      },
+      {
+        "name": "Payments",
+        "icon": "bi-credit-card",
+        "questions": [
+          {
+            "id": 12,
+            "question": "What payment methods do you accept?",
+            "answer": "We accept: bank card (Visa, Mastercard, Maestro), cash or card on delivery, Apple Pay, Google Pay, and electronic meal vouchers/tickets."
+          },
+          {
+            "id": 13,
+            "question": "Is online payment secure?",
+            "answer": "Absolutely! We use SSL encryption and PCI-DSS certified payment processors. Your card details are not stored on our servers."
+          },
+          {
+            "id": 14,
+            "question": "Can I pay with meal tickets?",
+            "answer": "Yes, we accept electronic meal tickets from major providers: Sodexo, Edenred, Up Romania, Pluxee. Select this option at checkout."
+          },
+          {
+            "id": 15,
+            "question": "How does payment on delivery work?",
+            "answer": "You can pay the courier cash or with a card at the time of delivery. Please prepare the exact amount to facilitate the transaction."
+          },
+          {
+            "id": 16,
+            "question": "Can I receive an invoice for the order?",
+            "answer": "Yes, you can request a fiscal invoice while placing the order. Enter the billing details in the dedicated section and you will receive the invoice by email."
+          }
+        ]
+      },
+      {
+        "name": "Account and Profile",
+        "icon": "bi-person-circle",
+        "questions": [
+          {
+            "id": 17,
+            "question": "How do I create an account?",
+            "answer": "Click on 'Register' in the top right corner. You can create an account using your email or log in quickly with Google or Facebook."
+          },
+          {
+            "id": 18,
+            "question": "I forgot my password. What do I do?",
+            "answer": "Click on 'Forgot password' on the login page. Enter the email address associated with the account and you will receive a link to reset your password."
+          },
+          {
+            "id": 19,
+            "question": "How do I change my delivery address?",
+            "answer": "Go to your account, 'My Addresses' section. Here you can add, modify or delete delivery addresses. You can have multiple saved addresses."
+          },
+          {
+            "id": 20,
+            "question": "How do I delete my account?",
+            "answer": "To delete your account, go to Settings > Privacy > Delete Account. This action is permanent and all data will be deleted."
+          },
+          {
+            "id": 21,
+            "question": "Can I have multiple saved addresses?",
+            "answer": "Yes, you can save multiple addresses (home, work, etc.). When placing an order, choose the desired address from the list of saved addresses."
+          }
+        ]
+      },
+      {
+        "name": "Restaurants and Products",
+        "icon": "bi-shop",
+        "questions": [
+          {
+            "id": 22,
+            "question": "How do I choose a good restaurant?",
+            "answer": "You can use the available filters: rating, average price, cuisine type, delivery time. We recommend checking other customers' reviews to make the best choice."
+          },
+          {
+            "id": 23,
+            "question": "What does the 'Verified' badge mean?",
+            "answer": "The 'Verified' badge indicates that the restaurant has passed our verification process and meets the platform's quality standards."
+          },
+          {
+            "id": 24,
+            "question": "How can I see a product's ingredients?",
+            "answer": "Click on any product to see the full description, ingredients, allergen information, and nutritional values (where available)."
+          },
+          {
+            "id": 25,
+            "question": "Can I customize menu items?",
+            "answer": "Yes, many products allow customization: adding or removing ingredients, choosing size, selecting sauces, etc. Options are displayed on the product page."
+          },
+          {
+            "id": 26,
+            "question": "What if I have food allergies?",
+            "answer": "Allergen information is displayed on each product page. You can also add a special note to the order. For severe allergies, we advise you to contact the restaurant directly."
+          },
+          {
+            "id": 27,
+            "question": "How does sorting by average price work?",
+            "answer": "A restaurant's average price is calculated as the average of all menu item prices. You can sort restaurants from most affordable to most expensive."
+          }
+        ]
+      },
+      {
+        "name": "Ratings and Reviews",
+        "icon": "bi-star",
+        "questions": [
+          {
+            "id": 28,
+            "question": "How can I leave a review?",
+            "answer": "After completing the order, you can rate the restaurant directly from its page. Select the number of stars (1-5) to give your rating."
+          },
+          {
+            "id": 29,
+            "question": "Can I modify or delete my rating?",
+            "answer": "Yes, you can modify your rating anytime by accessing the restaurant page and selecting a new score. You can also completely withdraw the rating using the 'Withdraw Rating' button."
+          },
+          {
+            "id": 30,
+            "question": "How is a restaurant's rating calculated?",
+            "answer": "The rating is the arithmetic average of all evaluations received from customers. Each customer can give only one rating per restaurant."
+          }
+        ]
+      },
+      {
+        "name": "Favorites and Cart",
+        "icon": "bi-heart",
+        "questions": [
+          {
+            "id": 31,
+            "question": "How do I add a restaurant to favorites?",
+            "answer": "Click on the heart icon on the restaurant card or details page. Favorite restaurants can be quickly accessed from the 'Favorites' section of your account."
+          },
+          {
+            "id": 32,
+            "question": "Is my cart saved?",
+            "answer": "Yes, your cart is saved automatically as long as you are logged in. You can return anytime to finalize the order."
+          },
+          {
+            "id": 33,
+            "question": "Can I move items from cart to favorites?",
+            "answer": "Products can be added to favorites directly from the restaurant menu. The cart and favorites list are managed separately."
+          }
+        ]
+      },
+      {
+        "name": "Collaborators and Partners",
+        "icon": "bi-building",
+        "questions": [
+          {
+            "id": 34,
+            "question": "How can I become a partner and add my restaurant?",
+            "answer": "If you have a restaurant and want to join our platform, contact us or register as a Collaborator. You will be able to add your restaurant, which will be verified by our team before going public."
+          },
+          {
+            "id": 35,
+            "question": "How long does the restaurant approval process take?",
+            "answer": "The verification process normally takes 1-3 working days. You will be notified by email when your restaurant is approved or if we need additional information."
+          },
+          {
+            "id": 36,
+            "question": "What documents are needed for registration?",
+            "answer": "To register a restaurant you need: fiscal registration certificate, operating permit, photos of the restaurant and menu, and contact details."
+          }
+        ]
+      },
+      {
+        "name": "Issues and Support",
+        "icon": "bi-question-circle",
+        "questions": [
+          {
+            "id": 37,
+            "question": "I received a wrong order. What do I do?",
+            "answer": "We are sorry for the inconvenience! Contact us immediately via chat or phone with order details and photos of the products received. We will resolve the situation as quickly as possible."
+          },
+          {
+            "id": 38,
+            "question": "The food arrived cold. Can I get a refund?",
+            "answer": "Please contact us within 30 minutes of receiving the order. We will analyze the situation and, depending on the case, offer a partial refund or credit for a future order."
+          },
+          {
+            "id": 39,
+            "question": "How do I contact the support team?",
+            "answer": "You can contact us via: live chat available in the app, email at support@gogogo.ro, or by phone at the number displayed in the Contact section. Support hours: Monday-Sunday, 09:00-23:00."
+          },
+          {
+            "id": 40,
+            "question": "I have a suggestion for the platform. Where do I send it?",
+            "answer": "We appreciate your feedback! You can send suggestions through the 'Feedback' section in the app or by email to feedback@gogogo.ro. We read every message!"
+          }
+        ]
+      },
+      {
+        "name": "Promotions and Discounts",
+        "icon": "bi-percent",
+        "questions": [
+          {
+            "id": 41,
+            "question": "How do I apply a promo code?",
+            "answer": "On the checkout page, find the 'Promo code' field. Enter the code and click 'Apply'. The discount will be automatically displayed in the order total."
+          },
+          {
+            "id": 42,
+            "question": "Can I use multiple codes on the same order?",
+            "answer": "Generally, only one promo code can be applied per order. Some special offers may be cumulative - check the terms and conditions of each promotion."
+          },
+          {
+            "id": 43,
+            "question": "Where can I find active promotions?",
+            "answer": "Active promotions are displayed on the main page, in the 'Special Offers' section. You will also receive notifications about new promotions if you have enabled notifications."
+          }
+        ]
+      }
+    ]
+  },
+  "quickResponses": {
+    "greeting": "Hello! I am the GoGoGo virtual assistant. How can I help you today?",
+    "farewell": "Thank you for choosing GoGoGo! Enjoy your meal and see you soon!",
+    "notUnderstood": "I'm sorry, I didn't understand the question. Can you rephrase it or choose one of the categories above?",
+    "transferToHuman": "I will now connect you with a human operator who can help you better. Please wait a few moments.",
+    "orderPlaced": "Your order has been placed successfully! You can track its status in the 'My Orders' section.",
+    "thankYouRating": "Thank you for your rating! Your feedback helps us improve our services."
+  },
+  "contactInfo": {
+    "email": "support@gogogo.ro",
+    "phone": "+40 XXX XXX XXX",
+    "workingHours": "Monday - Sunday, 09:00 - 23:00",
+    "responseTime": "We respond within a maximum of 30 minutes during working hours."
+  }
+}
