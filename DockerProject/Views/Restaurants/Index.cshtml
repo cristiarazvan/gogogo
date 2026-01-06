@@ -10,6 +10,8 @@
     ViewData["Title"] = "Discover Restaurants";
     var currentUserId = UserManager.GetUserId(User);
     var isAdmin = User.IsInRole("Admin");
+    var isCollaborator = User.IsInRole("Collaborator");
+    var canAddRestaurant = isAdmin || isCollaborator;
 
     // 1. Parametrii curenți
     var currentSort = ViewBag.CurrentSort as string;
@@ -46,7 +48,7 @@
                     <p class="page-subtitle mb-0">Explore the best restaurants in your area</p>
                 </div>
                 <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
-                    @if (isAdmin)
+                    @if (canAddRestaurant)
                     {
                         <a asp-action="Create" class="btn btn-light btn-lg">
                             <i class="bi bi-plus-lg me-2"></i>Add Restaurant
@@ -59,6 +61,22 @@
 </div>
 
 <div class="container pb-5">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-exclamation-circle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="toolbar">
         
         <div class="toolbar-search">
@@ -148,6 +166,9 @@
                     <li><a class="dropdown-item @(currentSort == "RatingDesc" ? "active" : "")" href="@GetSortUrl("RatingDesc")"><i class="bi bi-star-fill me-2 text-warning"></i>Highest Rated</a></li>
                     <li><a class="dropdown-item @(currentSort == "RatingAsc" ? "active" : "")" href="@GetSortUrl("RatingAsc")"><i class="bi bi-star me-2"></i>Lowest Rated</a></li>
                     <li><a class="dropdown-item @(currentSort == "NameAsc" ? "active" : "")" href="@GetSortUrl("NameAsc")"><i class="bi bi-sort-alpha-down me-2"></i>Name (A-Z)</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item @(currentSort == "PriceAsc" ? "active" : "")" href="@GetSortUrl("PriceAsc")"><i class="bi bi-currency-dollar me-2 text-success"></i>Most Affordable</a></li>
+                    <li><a class="dropdown-item @(currentSort == "PriceDesc" ? "active" : "")" href="@GetSortUrl("PriceDesc")"><i class="bi bi-cash-stack me-2 text-danger"></i>Most Expensive</a></li>
                 </ul>
             </div>
 
@@ -213,11 +234,11 @@
                                     }
                                     else if (item.IsApproved == 0)
                                     {
-                                        <span class="badge bg-danger rounded-pill px-3 py-2 shadow"><i class="bi bi-x-circle-fill me-1"></i>Denied</span>
+                                        <span class="badge bg-warning text-dark rounded-pill px-3 py-2 shadow"><i class="bi bi-hourglass-split me-1"></i>Pending Approval</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-warning text-dark rounded-pill px-3 py-2 shadow"><i class="bi bi-hourglass-split me-1"></i>Pending</span>
+                                        <span class="badge bg-danger rounded-pill px-3 py-2 shadow"><i class="bi bi-x-circle-fill me-1"></i>Denied</span>
                                     }
                                 </div>
                             </div>
@@ -237,8 +258,10 @@
 
                                     @if (item.Products != null && item.Products.Any())
                                     {
-                                        <div class="mb-3">
+                                        var avgPrice = item.Products.Average(p => p.Price);
+                                        <div class="mb-3 d-flex flex-wrap gap-3">
                                             <span class="restaurant-card-category"><i class="bi bi-box me-1"></i>@item.Products.Count products</span>
+                                            <span class="restaurant-card-category"><i class="bi bi-currency-dollar me-1"></i>Avg. @avgPrice.ToString("0.00", CultureInfo.InvariantCulture)</span>
                                         </div>
                                     }
 

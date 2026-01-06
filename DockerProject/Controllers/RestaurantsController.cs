@@ -86,6 +86,16 @@ namespace DockerProject.Controllers
                     case "NameAsc":
                         restaurantsList = restaurantsList.OrderBy(r => r.Name).ToList();
                         break;
+                    case "PriceAsc":
+                        // Sort by average product price (most affordable first)
+                        // Restaurants with no products go to the end
+                        restaurantsList = restaurantsList.OrderBy(r => r.Products.Any() ? r.Products.Average(p => p.Price) : double.MaxValue).ToList();
+                        break;
+                    case "PriceDesc":
+                        // Sort by average product price (most expensive first)
+                        // Restaurants with no products go to the end
+                        restaurantsList = restaurantsList.OrderByDescending(r => r.Products.Any() ? r.Products.Average(p => p.Price) : 0).ToList();
+                        break;
                     default:
                         restaurantsList = restaurantsList.OrderBy(r => r.Name).ToList();
                         break;
@@ -157,37 +167,45 @@ namespace DockerProject.Controllers
         }
 
         // GET: Restaurants/Create
+        [Authorize(Roles = "Admin,Collaborator")]
         public async Task<IActionResult> Create()
         {
             // Doar Adminul are nevoie de lista de useri
             if (User.IsInRole("Admin"))
             {
                 var allUsers = await _context.Users.ToListAsync();
-        
+
                 // Folosim cheia "OwnerList" ca să nu se confunde cu proprietatea OwnerId
                 ViewData["OwnerList"] = new SelectList(allUsers, "Id", "UserName");
             }
+
+            // Pass role info to the view for displaying appropriate messages
+            ViewBag.IsCollaborator = User.IsInRole("Collaborator");
+
             return View();
         }
 
         // POST: Restaurants/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Collaborator")]
         public async Task<IActionResult> Create(Restaurant restaurant, IFormFile? imageFile)
         {
             // LOGICA OWNER & STATUS
+            bool isCollaborator = User.IsInRole("Collaborator");
             if (!User.IsInRole("Admin"))
             {
                 restaurant.OwnerId = _userManager.GetUserId(User);
-                restaurant.IsApproved = 2; 
+                // Collaborators submit restaurants for approval (0=Pending)
+                restaurant.IsApproved = 0;
             }
-            else 
+            else
             {
                 if (string.IsNullOrEmpty(restaurant.OwnerId)) restaurant.OwnerId = _userManager.GetUserId(User);
             }
 
-            // --- FIX 1: SCOATEM VALIDAREA AUTOMATĂ PENTRU IMAGINE ---
-            ModelState.Remove("ImagePath"); // <--- Asta rezolvă eroarea "nu ai completat poza"
+            // --- FIX 1: SCOATEM VALIDAREA AUTOMATA PENTRU IMAGINE ---
+            ModelState.Remove("ImagePath"); // <--- Asta rezolva eroarea "nu ai completat poza"
             ModelState.Remove("Owner");
             ModelState.Remove("OwnerId");
             ModelState.Remove("Products");
@@ -196,19 +214,20 @@ namespace DockerProject.Controllers
             // --- PROCESARE IMAGINE ---
             if (imageFile != null && imageFile.Length > 0)
             {
-                // Validări dimensiune/tip...
+                // Validari dimensiune/tip...
                 if (imageFile.Length > 5 * 1024 * 1024)
                 {
                     ModelState.AddModelError("ImagePath", "Image too large (Max 5MB).");
                     if (User.IsInRole("Admin")) ViewData["OwnerList"] = new SelectList(_context.Users, "Id", "UserName", restaurant.OwnerId);
+                    ViewBag.IsCollaborator = isCollaborator;
                     return View(restaurant);
                 }
 
-                // --- FIX 2: CREARE FOLDER (Siguranță) ---
+                // --- FIX 2: CREARE FOLDER (Siguranta) ---
                 var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "restaurants");
-                if (!Directory.Exists(uploadsFolder)) 
+                if (!Directory.Exists(uploadsFolder))
                 {
-                    Directory.CreateDirectory(uploadsFolder); // Creăm folderul dacă nu există
+                    Directory.CreateDirectory(uploadsFolder); // Cream folderul daca nu exista
                 }
 
                 var uniqueFileName = Guid.NewGuid().ToString() + "_" + imageFile.FileName;
@@ -222,9 +241,10 @@ namespace DockerProject.Controllers
             }
             else
             {
-                // Dacă e CREATE și nu avem poză, e o problemă (că e Required)
+                // Daca e CREATE si nu avem poza, e o problema (ca e Required)
                 ModelState.AddModelError("ImagePath", "Please upload an image.");
                 if (User.IsInRole("Admin")) ViewData["OwnerList"] = new SelectList(_context.Users, "Id", "UserName", restaurant.OwnerId);
+                ViewBag.IsCollaborator = isCollaborator;
                 return View(restaurant);
             }
 
@@ -232,10 +252,22 @@ namespace DockerProject.Controllers
             {
                 _context.Add(restaurant);
                 await _context.SaveChangesAsync();
+
+                // Set success message based on role
+                if (isCollaborator)
+                {
+                    TempData["Success"] = $"Restaurant '{restaurant.Name}' has been submitted for approval. An administrator will review your request.";
+                }
+                else
+                {
+                    TempData["Success"] = $"Restaurant '{restaurant.Name}' has been created successfully.";
+                }
+
                 return RedirectToAction(nameof(Index));
             }
 
             if (User.IsInRole("Admin")) ViewData["OwnerList"] = new SelectList(_context.Users, "Id", "UserName", restaurant.OwnerId);
+            ViewBag.IsCollaborator = isCollaborator;
             return View(restaurant);
         }
 
@@ -358,7 +390,7 @@ namespace DockerProject.Controllers
             if (score < 1 || score > 5) return BadRequest("Invalid score");
 
             var userId = _userManager.GetUserId(User);
-    
+
             var existingRating = await _context.RestaurantRating
                 .FirstOrDefaultAsync(r => r.RestaurantId == restaurantId && r.UserId == userId);
 
@@ -379,6 +411,25 @@ namespace DockerProject.Controllers
             }
 
             await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Details), new { id = restaurantId });
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> WithdrawRating(int restaurantId)
+        {
+            var userId = _userManager.GetUserId(User);
+
+            var existingRating = await _context.RestaurantRating
+                .FirstOrDefaultAsync(r => r.RestaurantId == restaurantId && r.UserId == userId);
+
+            if (existingRating != null)
+            {
+                _context.RestaurantRating.Remove(existingRating);
+                await _context.SaveChangesAsync();
+            }
 
             return RedirectToAction(nameof(Details), new { id = restaurantId });
         }
