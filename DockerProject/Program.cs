@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using DockerProject.Data;
 using DockerProject.Models;
+using DockerProject.Services;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 
@@ -17,6 +18,9 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
+
+// Register AI Chat Service
+builder.Services.AddSingleton<AIChatService>();
 
 var app = builder.Build();
 
