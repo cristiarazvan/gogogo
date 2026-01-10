@@ -314,7 +314,7 @@ namespace DockerProject.Controllers
             if (!User.IsInRole("Admin"))
             {
                 restaurant.OwnerId = oldData.OwnerId;
-                restaurant.IsApproved = oldData.IsApproved;
+                restaurant.IsApproved = 0; // Reset to Pending on update
             }
 
             if (imageFile != null && imageFile.Length > 0)

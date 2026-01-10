@@ -80,7 +80,7 @@
                                         <form asp-action="UpdateQuantity" method="post" class="d-flex align-items-center gap-2">
                                             <input type="hidden" name="cartItemId" value="@item.Id" />
                                             <div class="input-group" style="width: 140px;">
-                                                <input type="number" name="quantity" value="@item.Quantity" min="1" max="@item.Product.Stock" class="form-control text-center" />
+                                                <input type="number" name="quantity" value="@item.Quantity" min="1" max="@item.Product.Stock" class="form-control text-center" onchange="this.form.submit()" />
                                                 <button type="submit" class="btn btn-outline-primary">
                                                     <i class="bi bi-arrow-repeat"></i>
                                                 </button>

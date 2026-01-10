@@ -31,13 +31,14 @@
 }
 else
 {
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
     <li class="nav-item">
-        <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">
+        <a class="nav-link" asp-area="Identity" asp-page="/Account/Login" asp-route-ReturnUrl="@returnUrl">
             <i class="bi bi-box-arrow-in-right"></i> Login
         </a>
     </li>
     <li class="nav-item ms-2">
-        <a class="btn btn-primary btn-sm px-3" asp-area="Identity" asp-page="/Account/Register">
+        <a class="btn btn-primary btn-sm px-3" asp-area="Identity" asp-page="/Account/Register" asp-route-ReturnUrl="@returnUrl">
             <i class="bi bi-person-plus"></i> Sign Up
         </a>
     </li>

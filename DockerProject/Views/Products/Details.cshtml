@@ -105,7 +105,7 @@
                         }
                         else if (!User.Identity.IsAuthenticated)
                         {
-                            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-lg flex-grow-1">
+                            <a asp-area="Identity" asp-page="/Account/Login" asp-route-ReturnUrl="@(Context.Request.Path + Context.Request.QueryString)" class="btn btn-primary btn-lg flex-grow-1">
                                 <i class="bi bi-box-arrow-in-right me-2"></i>Login to Order
                             </a>
                         }
@@ -179,7 +179,7 @@
                 {
                     <div class="alert alert-primary">
                         <i class="bi bi-info-circle me-2"></i>
-                        Please <a asp-area="Identity" asp-page="/Account/Login" class="fw-bold">login</a> to leave a review.
+                        Please <a asp-area="Identity" asp-page="/Account/Login" asp-route-ReturnUrl="@(Context.Request.Path + Context.Request.QueryString)" class="fw-bold">login</a> to leave a review.
                     </div>
                 }
             </div>

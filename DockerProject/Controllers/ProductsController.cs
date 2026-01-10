@@ -150,6 +150,17 @@ namespace DockerProject.Controllers
             if (ModelState.IsValid)
             {
                 _context.Add(product);
+                
+                // Reset Restaurant Status if not Admin
+                if (!User.IsInRole("Admin"))
+                {
+                    var restaurant = await _context.Restaurants.FindAsync(product.RestaurantId);
+                    if (restaurant != null)
+                    {
+                        restaurant.IsApproved = 0; // Reset to Pending
+                    }
+                }
+
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
@@ -207,6 +218,9 @@ namespace DockerProject.Controllers
             ModelState.Remove("Restaurant");
             ModelState.Remove("Reviews");
 
+            // Fetch old data for comparison
+            var oldData = await _context.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+
             if (imageFile != null && imageFile.Length > 0)
             {
                 // --- FIX CRITIC: CREAREA FOLDERULUI SI LA EDIT ---
@@ -229,7 +243,7 @@ namespace DockerProject.Controllers
             else
             {
                 // Păstrăm imaginea veche
-                var oldData = await _context.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+                // var oldData = await _context.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id); // Removed as we fetched it above
                 product.ImagePath = oldData.ImagePath;
             }
 
@@ -237,6 +251,24 @@ namespace DockerProject.Controllers
             {
                 try 
                 { 
+                    // Reset Status Logic
+                    if (!User.IsInRole("Admin") && oldData != null)
+                    {
+                        // Check if meaningful fields changed (excluding Stock)
+                        if (product.Title != oldData.Title ||
+                            product.Description != oldData.Description ||
+                            product.Price != oldData.Price ||
+                            product.CategoryId != oldData.CategoryId ||
+                            product.ImagePath != oldData.ImagePath)
+                        {
+                            var restaurant = await _context.Restaurants.FindAsync(product.RestaurantId);
+                            if (restaurant != null)
+                            {
+                                restaurant.IsApproved = 0; // Reset to Pending
+                            }
+                        }
+                    }
+
                     _context.Update(product); 
                     await _context.SaveChangesAsync(); 
                 }
@@ -281,7 +313,19 @@ namespace DockerProject.Controllers
             var product = await _context.Products.FindAsync(id);
             if (product != null)
             {
+                var restaurantId = product.RestaurantId;
                 _context.Products.Remove(product);
+                
+                // Reset Restaurant Status if not Admin
+                if (!User.IsInRole("Admin"))
+                {
+                    var restaurant = await _context.Restaurants.FindAsync(restaurantId);
+                    if (restaurant != null)
+                    {
+                        restaurant.IsApproved = 0; // Reset to Pending
+                    }
+                }
+
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));

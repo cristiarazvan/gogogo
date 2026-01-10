@@ -87,3 +87,18 @@
         </div>
     </div>
 </div>
+
+<audio id="successSound" src="~/sounds/gogogo.mp3"></audio>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var audio = document.getElementById('successSound');
+        if (audio) {
+            audio.volume = 0.6; // Set a reasonable volume
+            audio.play().catch(function(error) {
+                console.log('Audio autoplay was prevented:', error);
+                // Optional: Add a UI element to let the user play it manually if needed
+            });
+        }
+    });
+</script>

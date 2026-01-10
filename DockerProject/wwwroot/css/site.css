@@ -1136,6 +1136,7 @@ body {
 }
 
 .rating .bi-star-fill { color: var(--warning); }
+.rating .bi-star-half { color: var(--warning); }
 .rating .bi-star { color: var(--text-muted); }
 
 .rating-value {
